@@ -28,7 +28,7 @@ def main() -> None:
         default="demo",
     )
     parser.add_argument("--top-k", type=int, default=3)
-    parser.add_argument("--max-distance", type=float, default=1.0)
+    parser.add_argument("--max-distance", type=float, default=2.0)
     args = parser.parse_args()
     settings = Settings()
     store = ChromaStore(settings.chroma_dir)
