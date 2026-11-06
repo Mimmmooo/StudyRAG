@@ -23,14 +23,13 @@ src/embeddings/embedder.py  sentence-transformers local embeddings
 src/vectorstore/chroma_store.py    Chroma collection + page metadata
 
 
-Browser question
-       |
+Browser question + up to six previous turns\n       |
        v
 src/ui_service.py
        |
        v
 src/rag/pipeline.py
-       |  embed question -> Chroma similarity search -> filter distance
+       |  embed current question with recent user context -> Chroma similarity search -> filter distance
        |  prepare source-labelled context -> provider.generate(prompt)
        v
 src/llm/factory.py -> Ollama / Gemini / Groq (src/llm/*_provider.py)
@@ -62,7 +61,7 @@ PDF page numbers are 1-based, derived from the text layer. TXT/MD are treated as
 
 ## Model separation
 
-`BaseLLMProvider.generate(prompt)` defines the shared provider interface. The factory selects local Ollama or optional Gemini/Groq APIs. The RAG pipeline does not need to know which provider was selected. API keys are supplied by the user/environment and should never be committed.
+`BaseLLMProvider.generate(prompt)` defines the shared provider interface. The factory selects local Ollama or optional Gemini/Groq APIs. The RAG pipeline does not need to know which provider was selected. Recent chat turns (up to six, with each text clipped to 500 characters) help resolve follow-up references, but only newly retrieved file passages count as factual evidence. API keys are supplied by the user/environment and should never be committed.
 
 ## Storage and trust boundaries
 
@@ -73,4 +72,4 @@ PDF page numbers are 1-based, derived from the text layer. TXT/MD are treated as
 
 ## Testing
 
-`python -m ruff check .` checks lint; `python -m pytest -q` runs offline tests. GitHub Actions runs both on Python 3.11 and 3.12. The local Ollama live test and Community Cloud deployment are separate manual checks.
+`python -m ruff check .` checks lint; `python -m pytest -q` runs offline tests. GitHub Actions runs both on Python 3.11 and 3.12. The local Ollama live test is a separate manual check. No hosted deployment is required for this portfolio project.
