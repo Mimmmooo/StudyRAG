@@ -34,6 +34,7 @@ class StudySession:
         self.store = ChromaStore(self._root / "chroma")
         self.embedder = LocalEmbedder(self.settings.embedding_model)
         self.files: list[str] = []
+        self.last_debug: dict[str, object] = {}
 
     def ingest(self, uploads: list[UploadedFile]) -> dict[str, int]:
         """Validate and index uploaded notes without persisting originals."""
@@ -74,9 +75,24 @@ class StudySession:
         llm = create_provider(
             provider, api_key=api_key, settings=self.settings
         )
-        return RAGPipeline(
-            self.embedder, self.store, llm, max_distance=2.0
-        ).ask(question)
+        pipeline = RAGPipeline(self.embedder, self.store, llm, max_distance=2.0)
+        self.last_debug = {}
+        result = pipeline.ask(question)
+        self.last_debug = {
+            "indexed_chunks": self.store.count(),
+            "matches": [
+                {
+                    "source": item.get("source"),
+                    "page": item.get("page"),
+                    "distance": round(item["distance"], 4),
+                }
+                for item in pipeline.last_matches
+                if isinstance(item.get("distance"), (int, float))
+            ],
+            "model_answer": pipeline.last_model_response,
+            "threshold": pipeline.max_distance,
+        }
+        return result
 
     def close(self) -> None:
         """Remove the session's temporary document index."""
