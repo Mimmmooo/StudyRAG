@@ -87,3 +87,19 @@ def test_multiple_citations_keep_pages() -> None:
         [_match("First"), {**_match("Second"), "page": 5}]
     )
     assert [citation.page for citation in rag.ask("Question?").citations] == [4, 5]
+
+
+def test_debug_capture_for_matching_passage() -> None:
+    """Expose the actual retrieval distance and model response for UI debugging."""
+    rag, _, _, _ = _pipeline([_match("Stored vectors.", distance=1.1261)])
+    assert rag.ask("What does ChromaDB store?").citations
+    assert rag.last_matches[0]["distance"] == 1.1261
+    assert rag.last_model_response == "Vectors are stored. [1]"
+
+
+def test_debug_capture_without_passages() -> None:
+    """When retrieval is empty, no model answer should be recorded."""
+    rag, _, _, _ = _pipeline([])
+    assert rag.ask("Unknown?").answer == NOT_FOUND
+    assert rag.last_matches == []
+    assert rag.last_model_response is None
