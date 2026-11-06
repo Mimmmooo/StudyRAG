@@ -1,17 +1,18 @@
 # StudyRAG
 
-Free, open-source study assistant for asking questions about your notes with document and page citations.
+Free, open-source study assistant for asking questions about your own notes, with source file and page citations.
 
-**Current status: Phase 1 scaffold.** Document upload, retrieval and chat will be implemented in later phases.
+**Status: Phase 2 complete (ingestion CLI).** The Streamlit screen remains a setup placeholder; AI chat is not implemented yet.
 
-## Planned features
-- PDF, TXT and MD ingestion
-- Configurable chunks, local sentence-transformer embeddings and ChromaDB
-- Ollama locally or bring your own Gemini/Groq free-tier API key
-- Streamlit chat with page-aware citations
-- Tests and GitHub Actions CI
+## Features available now
+- Parse text-based PDF, TXT, and MD files
+- Keep source filename and PDF page number for each chunk
+- Configurable chunk size and overlap
+- Generate free local sentence-transformer embeddings
+- Persist embeddings in local ChromaDB; similarity search and reset via CLI
+- Automated unit/integration tests
 
-## Setup (Python 3.11 or 3.12 recommended)
+## Quick start (macOS, Python 3.12)
 
 ```bash
 git clone https://github.com/Mimmmooo/StudyRAG.git
@@ -19,45 +20,59 @@ cd StudyRAG
 python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements-dev.txt
-cp .env.example .env
+python -m pytest -q
+python -m ruff check .
 python -m streamlit run app.py
 ```
 
-## Checks
+If you already have a local checkout, run `git pull origin main` inside it instead of cloning. If you previously extracted a ZIP (not a git clone), download the new ZIP from GitHub or use the Phase 2 ZIP provided in chat.
+
+## Phase 2: test document ingestion
 
 ```bash
-python -m ruff check .
-python -m pytest -q
+python -m scripts.ingest examples/sample_notes.txt
+python -m scripts.ingest --query "What does ChromaDB store?"
+python -m scripts.ingest --clear
 ```
+
+The first embedding command downloads the free `all-MiniLM-L6-v2` model from Hugging Face (internet required once). After caching, embeddings can run offline. The default local vector database lives in `.chroma/` and is gitignored.
+
+Try your own files:
+
+```bash
+python -m scripts.ingest "/path/to/lecture.pdf" "/path/to/notes.md"
+```
+
+Scanned/image-only PDFs are not supported yet. TXT and MD files use page 1 as their citation placeholder. Do not index confidential documents on a shared computer. The CLI stores text and vectors locally.
 
 ## Architecture
 
 ```text
-app.py
-src/config.py
-src/ingestion/
-src/embeddings/
-src/vectorstore/
-src/llm/
-src/rag/
-tests/
-.github/workflows/ci.yml
+app.py                       Streamlit setup placeholder
+src/config.py                Environment settings
+src/ingestion/loaders.py     PDF/TXT/MD -> page-aware records
+src/ingestion/chunker.py     Page-aware overlapping chunks
+src/ingestion/service.py     Indexing orchestration
+src/embeddings/embedder.py   Local sentence-transformer embeddings
+src/vectorstore/chroma_store.py  Persistent Chroma search
+scripts/ingest.py            Local indexing and search CLI
+tests/                       Unit and integration tests
+.github/workflows/ci.yml     Ruff + pytest
 ```
 
-LangChain's focused packages provide text splitting and interfaces, while the project keeps its own readable orchestration.
+LangChain text splitters are used for chunking, with business logic kept out of the Streamlit UI.
 
 ## Roadmap
-- [x] Phase 1: setup and configuration
-- [ ] Phase 2: ingestion, chunking, embeddings, ChromaDB
-- [ ] Phase 3: LLM providers
-- [ ] Phase 4: RAG with citations
-- [ ] Phase 5: Streamlit chat UI
+- [x] Phase 1: setup
+- [x] Phase 2: ingestion, embeddings, Chroma
+- [ ] Phase 3: Ollama/Gemini/Groq/BYOK providers
+- [ ] Phase 4: RAG answer generation with citations and not-found handling
+- [ ] Phase 5: Streamlit upload/chat UI
 - [ ] Phase 6: expanded tests and CI
 - [ ] Phase 7: documentation and free deployment
 - [ ] Phase 8: stretch goals
 
-## Security
-Never commit keys, .env files, or uploaded documents. Free-tier quotas and model availability may change.
+## Security and limits
+Never commit API keys, `.env`, `.chroma`, or private study notes. API-based providers will use user-owned keys in later phases. PDF extraction requires a text layer; OCR is a future enhancement.
 
-## License
-MIT
+MIT licensed.
