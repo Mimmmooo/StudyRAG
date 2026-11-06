@@ -1,6 +1,5 @@
 """Retrieve source passages and generate grounded, follow-up-aware answers."""
 
-import re
 from typing import Protocol
 
 from src.llm.base import BaseLLMProvider
@@ -103,7 +102,7 @@ class RAGPipeline:
             f"{NOT_FOUND}\n"
             "Use numbered source markers like [1] for supported claims, "
             "where the number refers to a passage. Do not invent sources "
-            "or unsupported facts. Previous turns are only for resolving "
+            "or unsupported facts. Do not add unsupported facts. Previous turns are only for resolving "
             "follow-up references; they are not evidence.\n\n"
             f"Previous conversation:\n{conversation or '(none)'}\n\n"
             f"Study passages:\n{_source_context(citations)}\n\n"
