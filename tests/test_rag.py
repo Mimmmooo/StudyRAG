@@ -92,6 +92,7 @@ def test_multiple_citations_keep_pages() -> None:
 def test_debug_capture_for_matching_passage() -> None:
     """Expose the actual retrieval distance and model response for UI debugging."""
     rag, _, _, _ = _pipeline([_match("Stored vectors.", distance=1.1261)])
+    rag.max_distance = 2.0
     assert rag.ask("What does ChromaDB store?").citations
     assert rag.last_matches[0]["distance"] == 1.1261
     assert rag.last_model_response == "Vectors are stored. [1]"
