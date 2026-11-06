@@ -1,0 +1,47 @@
+name: Publish StudyRAG v1.0.0
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: studyrag-first-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: >-
+      github.repository == 'Mimmmooo/StudyRAG' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - name: Publish first release only after latest main passes CI
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/commits/main" --jq '.sha')"
+          if [[ "$head_sha" != "$RELEASE_SHA" ]]; then
+            echo "Skipping older CI commit."
+            exit 0
+          fi
+          if gh release view v1.0.0 >/dev/null 2>&1; then
+            echo "Release v1.0.0 already exists."
+            exit 0
+          fi
+          gh release create v1.0.0 \
+            --target "$RELEASE_SHA" \
+            --title "StudyRAG v1.0.0" \
+            --notes-file RELEASE_NOTES.md \
+            --latest
