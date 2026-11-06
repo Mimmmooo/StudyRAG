@@ -64,20 +64,20 @@ class StudySession:
             for path in paths:
                 path.unlink(missing_ok=True)
         self.files = sorted(set(self.files).union(counts))
+        self.last_debug = {}
         return counts
 
     def ask(
-        self, question: str, provider: ProviderName, api_key: str | None = None
-    ) -> RAGAnswer:
+        self,\n        question: str,\n        provider: ProviderName,\n        api_key: str | None = None,\n        history: list[tuple[str, str]] | None = None,\n        top_k: int = 3,\n    ) -> RAGAnswer:
         """Run grounded retrieval using the selected LLM provider."""
         if self.store.count() == 0:
             raise ValueError("Upload and index notes before asking questions.")
         llm = create_provider(
             provider, api_key=api_key, settings=self.settings
         )
-        pipeline = RAGPipeline(self.embedder, self.store, llm, max_distance=2.0)
+        pipeline = RAGPipeline(\n            self.embedder, self.store, llm, top_k=top_k, max_distance=2.0\n        )
         self.last_debug = {}
-        result = pipeline.ask(question)
+        result = pipeline.ask(question, history=history)
         self.last_debug = {
             "indexed_chunks": self.store.count(),
             "matches": [
