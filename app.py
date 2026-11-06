@@ -84,10 +84,18 @@ def main() -> None:
                     result = session.ask(question, provider, api_key=key)
                 answer = result.answer
                 sources = result.citations
+                debug = session.last_debug
             except (LLMError, ValueError, OSError) as exc:
                 answer = f"Could not answer: {exc}"
                 sources = ()
+                debug = {}
             st.markdown(answer)
+            if not sources and debug:
+                with st.expander("Why was no answer found? (diagnostics)"):
+                    st.write(f"Indexed chunks: {debug['indexed_chunks']}")
+                    st.write(f"Retrieval cutoff: {debug['threshold']}")
+                    st.write(f"Retrieved matches: {debug['matches']}")
+                    st.write(f"Model response: {debug['model_answer']!r}")
             for source in sources:
                 with st.expander(
                     f"Source: {source.source}, page {source.page}"
