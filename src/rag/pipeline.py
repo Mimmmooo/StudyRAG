@@ -37,6 +37,8 @@ class RAGPipeline:
         self.llm = llm
         self.top_k = top_k
         self.max_distance = max_distance
+        self.last_matches: list[dict] = []
+        self.last_model_response: str | None = None
 
     def ask(self, question: str) -> RAGAnswer:
         """Answer from nearby notes or return a clear no-answer result."""
@@ -45,6 +47,8 @@ class RAGPipeline:
         matches = self.store.search(
             self.embedder.embed_query(question), limit=self.top_k
         )
+        self.last_matches = matches
+        self.last_model_response = None
         relevant = [
             item
             for item in matches
@@ -73,6 +77,7 @@ class RAGPipeline:
             f"Question: {question}\nAnswer:"
         )
         answer = self.llm.generate(prompt).strip()
+        self.last_model_response = answer
         if not answer or NOT_FOUND.lower() in answer.lower():
             return RAGAnswer(NOT_FOUND, ())
         return RAGAnswer(answer, citations)
