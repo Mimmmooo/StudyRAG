@@ -18,7 +18,7 @@ class OllamaProvider(BaseLLMProvider):
         try:
             data = post_json(
                 f"{self.base_url}/api/generate",
-                {"model": self.model, "prompt": prompt, "stream": False},
+                {"model": self.model, "prompt": prompt, "stream": False, "options": {"temperature": 0}},
                 timeout=180,
             )
         except LLMError as exc:
