@@ -7,7 +7,6 @@ from src.rag.models import Citation, RAGAnswer
 from src.vectorstore.chroma_store import ChromaStore
 
 NOT_FOUND = "I couldn't find an answer in the uploaded notes."
-CITATION_PATTERN = re.compile(r"\[(\d+)\]")
 
 
 class QueryEmbedder(Protocol):
