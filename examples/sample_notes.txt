@@ -1,0 +1,5 @@
+StudyRAG sample notes
+Retrieval-augmented generation retrieves relevant passages before generating an answer.
+Embeddings represent text as numerical vectors.
+ChromaDB stores vectors and lets us search for similar passages.
+Source citations should include the original file name and page number.
