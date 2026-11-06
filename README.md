@@ -104,3 +104,19 @@ LangChain text splitters are used for chunking, with business logic kept out of 
 Never commit API keys, `.env`, `.chroma`, or private study notes. API-based providers will use user-owned keys in later phases. PDF extraction requires a text layer; OCR is a future enhancement.
 
 MIT licensed.
+
+
+## Phase 4: retrieval-augmented answers
+
+Phase 4 connects the local embedding model, ChromaDB search, and the provider-neutral LLM interface. Responses include retrieved file and page citations. When no sufficiently close passage is found, the pipeline returns a no-answer message. This is a retrieval threshold, not a guarantee that generated claims are correct.
+
+First index the example file (if not already indexed), then run the offline smoke test:
+
+```bash
+python -m scripts.ingest examples/sample_notes.txt
+python -m scripts.rag_smoke
+python -m ruff check .
+python -m pytest -v
+```
+
+The default `demo` provider proves retrieval and citation wiring without generating a factual answer. To generate a real answer with a running local Ollama model, use `python -m scripts.rag_smoke --provider ollama`. Alternatively choose `gemini` or `groq` after setting your own free-tier API key. The chat UI is planned for Phase 5.
