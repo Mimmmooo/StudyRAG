@@ -2,7 +2,7 @@
 
 Free, open-source study assistant for asking questions about your own notes, with source file and page citations.
 
-**Status: Phase 3 complete (LLM provider adapters).** The Streamlit screen remains a setup placeholder; grounded RAG answers and chat UI are not implemented yet.
+**Status: Phase 6 (tests and CI).** The Streamlit app supports upload, retrieval, Ollama/Gemini/Groq and file/page citations.
 
 ## Features available now
 - Parse text-based PDF, TXT, and MD files
@@ -76,7 +76,7 @@ The demo validates the common interface; it does **not** make a live cloud or Ol
 ## Architecture
 
 ```text
-app.py                       Streamlit setup placeholder
+app.py                       Streamlit chat interface
 src/config.py                Environment settings
 src/ingestion/loaders.py     PDF/TXT/MD -> page-aware records
 src/ingestion/chunker.py     Page-aware overlapping chunks
@@ -94,9 +94,9 @@ LangChain text splitters are used for chunking, with business logic kept out of 
 - [x] Phase 1: setup
 - [x] Phase 2: ingestion, embeddings, Chroma
 - [x] Phase 3: Ollama/Gemini/Groq/BYOK providers
-- [ ] Phase 4: RAG answer generation with citations and not-found handling
-- [ ] Phase 5: Streamlit upload/chat UI
-- [ ] Phase 6: expanded tests and CI
+- [x] Phase 4: RAG answer generation with citations and not-found handling
+- [x] Phase 5: Streamlit upload/chat UI
+- [x] Phase 6: expanded tests and CI
 - [ ] Phase 7: documentation and free deployment
 - [ ] Phase 8: stretch goals
 
@@ -119,4 +119,13 @@ python -m ruff check .
 python -m pytest -v
 ```
 
-The default `demo` provider proves retrieval and citation wiring without generating a factual answer. To generate a real answer with a running local Ollama model, use `python -m scripts.rag_smoke --provider ollama`. Alternatively choose `gemini` or `groq` after setting your own free-tier API key. The chat UI is planned for Phase 5.
+The default `demo` provider proves retrieval and citation wiring without generating a factual answer. To generate a real answer with a running local Ollama model, use `python -m scripts.rag_smoke --provider ollama`. Alternatively choose `gemini` or `groq` after setting your own free-tier API key. The chat UI is implemented in Phase 5.
+
+
+## Phase 5 and 6: UI and quality checks
+
+Run `python -m streamlit run app.py`. Upload PDF/TXT/MD study notes, click **Index selected files**, select Ollama/Gemini/Groq and ask questions. The app shows retrieved file/page citations. Ollama needs a running local service and a downloaded model (`ollama pull qwen2.5:3b`). Gemini/Groq use optional free-tier BYOK credentials. Do not commit secrets. Each browser session has a temporary Chroma index and indexed originals are deleted; use **Clear notes and chat** to reset.
+
+Run `python -m ruff check . && python -m pytest -q` for Phase 6 verification. GitHub Actions runs lint and offline unit/integration tests on Python 3.11 and 3.12 for pushes and pull requests. No API key or live model is required for CI. Tests cover file parsing, PDF OCR limitations, multiple citation sources, retrieval cutoff behavior, upload validation, path traversal prevention and cleanup on failure.
+
+Known limits: scanned PDFs need OCR; the retrieval distance cutoff is not calibrated; citations do not guarantee every generated claim is correct; the chat history is displayed but is not currently supplied as conversation context to the model. Do not upload private notes to a shared deployment without reviewing its privacy controls.
