@@ -6,6 +6,12 @@ StudyRAG runs on your computer. Upload text-based PDFs, TXT or Markdown files; i
 
 **Status:** Open-source portfolio project. No cloud deployment is required. The GitHub repository is public and MIT licensed.
 
+## Interface preview
+
+![StudyRAG chat UI with local Ollama and source citations](docs/assets/studyrag-ui-preview.svg)
+
+*Illustrated preview based on the locally tested Streamlit interface. Shows a question, a follow-up, and page-aware citations.*
+
 ## Features
 
 - 📄 Upload multiple PDF, TXT and Markdown notes (15 MB per file)
