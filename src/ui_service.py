@@ -68,7 +68,13 @@ class StudySession:
         return counts
 
     def ask(
-        self,\n        question: str,\n        provider: ProviderName,\n        api_key: str | None = None,\n        history: list[tuple[str, str]] | None = None,\n        top_k: int = 3,\n    ) -> RAGAnswer:
+        self,
+        question: str,
+        provider: ProviderName,
+        api_key: str | None = None,
+        history: list[tuple[str, str]] | None = None,
+        top_k: int = 3,
+    ) -> RAGAnswer:
         """Run grounded retrieval using the selected LLM provider."""
         if self.store.count() == 0:
             raise ValueError("Upload and index notes before asking questions.")
