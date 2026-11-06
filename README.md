@@ -2,7 +2,7 @@
 
 Free, open-source study assistant for asking questions about your own notes, with source file and page citations.
 
-**Status: Phase 2 complete (ingestion CLI).** The Streamlit screen remains a setup placeholder; AI chat is not implemented yet.
+**Status: Phase 3 complete (LLM provider adapters).** The Streamlit screen remains a setup placeholder; grounded RAG answers and chat UI are not implemented yet.
 
 ## Features available now
 - Parse text-based PDF, TXT, and MD files
@@ -10,7 +10,7 @@ Free, open-source study assistant for asking questions about your own notes, wit
 - Configurable chunk size and overlap
 - Generate free local sentence-transformer embeddings
 - Persist embeddings in local ChromaDB; similarity search and reset via CLI
-- Automated unit/integration tests
+- Interchangeable Ollama, Gemini and Groq LLM providers behind a common interface\n- API keys supplied via environment variables or per-call BYOK; never stored in the vector DB\n- Automated unit/integration tests
 
 ## Quick start (macOS, Python 3.12)
 
@@ -45,6 +45,34 @@ python -m scripts.ingest "/path/to/lecture.pdf" "/path/to/notes.md"
 
 Scanned/image-only PDFs are not supported yet. TXT and MD files use page 1 as their citation placeholder. Do not index confidential documents on a shared computer. The CLI stores text and vectors locally.
 
+## Phase 3: test the LLM providers
+
+The **offline demo** needs no key, model download, or running Ollama service:
+
+```bash
+python -m scripts.llm_smoke
+python -m pytest -v
+python -m ruff check .
+```
+
+To use **Ollama** locally, install and start Ollama separately, then pull the selected model:
+
+```bash
+ollama pull qwen2.5:3b
+python -m scripts.llm_smoke --provider ollama
+```
+
+For **Gemini** or **Groq**, create your own free-tier key. Set it in your shell without committing it:
+
+```bash
+export GEMINI_API_KEY="your-key"
+python -m scripts.llm_smoke --provider gemini
+```
+
+Or use `GROQ_API_KEY` with `--provider groq`. Free-tier limits, model names, and eligibility can change. Never paste keys in chat or commit them. In the later Streamlit UI, BYOK keys will live only in session memory.
+
+The demo validates the common interface; it does **not** make a live cloud or Ollama request. Real provider calls are optional and should be tested separately.
+
 ## Architecture
 
 ```text
@@ -54,7 +82,7 @@ src/ingestion/loaders.py     PDF/TXT/MD -> page-aware records
 src/ingestion/chunker.py     Page-aware overlapping chunks
 src/ingestion/service.py     Indexing orchestration
 src/embeddings/embedder.py   Local sentence-transformer embeddings
-src/vectorstore/chroma_store.py  Persistent Chroma search
+src/vectorstore/chroma_store.py  Persistent Chroma search\nsrc/llm/base.py             Common abstract provider interface\nsrc/llm/factory.py          Provider selection and BYOK\nsrc/llm/*_provider.py       Ollama, Gemini and Groq adapters\nscripts/llm_smoke.py        Provider smoke test
 scripts/ingest.py            Local indexing and search CLI
 tests/                       Unit and integration tests
 .github/workflows/ci.yml     Ruff + pytest
@@ -65,7 +93,7 @@ LangChain text splitters are used for chunking, with business logic kept out of 
 ## Roadmap
 - [x] Phase 1: setup
 - [x] Phase 2: ingestion, embeddings, Chroma
-- [ ] Phase 3: Ollama/Gemini/Groq/BYOK providers
+- [x] Phase 3: Ollama/Gemini/Groq/BYOK providers
 - [ ] Phase 4: RAG answer generation with citations and not-found handling
 - [ ] Phase 5: Streamlit upload/chat UI
 - [ ] Phase 6: expanded tests and CI
