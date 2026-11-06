@@ -5,13 +5,13 @@ from unittest.mock import Mock, patch
 import pytest
 import requests
 
+from scripts.llm_smoke import DemoProvider
 from src.llm.base import BaseLLMProvider, LLMError
 from src.llm.factory import create_provider
 from src.llm.gemini_provider import GeminiProvider
 from src.llm.groq_provider import GroqProvider
 from src.llm.http import post_json
 from src.llm.ollama_provider import OllamaProvider
-from scripts.llm_smoke import DemoProvider
 
 
 def test_common_interface() -> None:
@@ -59,13 +59,17 @@ def test_factory_selects_ollama() -> None:
 def test_rate_limit_is_friendly() -> None:
     """HTTP 429 returns a useful message without leaking response bodies."""
     response = Mock(status_code=429)
-    with patch("src.llm.http.requests.post", return_value=response):
-        with pytest.raises(LLMError, match="rate limit"):
-            post_json("https://example.com", {})
+    with (
+        patch("src.llm.http.requests.post", return_value=response),
+        pytest.raises(LLMError, match="rate limit"),
+    ):
+        post_json("https://example.com", {})
 
 
 def test_connection_failure_is_friendly() -> None:
     """Network failures become user-facing errors."""
-    with patch("src.llm.http.requests.post", side_effect=requests.ConnectionError):
-        with pytest.raises(LLMError, match="Cannot connect"):
-            post_json("https://example.com", {})
+    with (
+        patch("src.llm.http.requests.post", side_effect=requests.ConnectionError),
+        pytest.raises(LLMError, match="Cannot connect"),
+    ):
+        post_json("https://example.com", {})
