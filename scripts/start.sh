@@ -43,6 +43,9 @@ for candidate in python3.12 python3.11; do
     break
   fi
 done
+if ! command -v curl >/dev/null 2>&1; then
+  fail "curl is required. Install it once (Ubuntu: sudo apt install curl)."
+fi
 if [ -z "$PYTHON" ]; then
   info "Python 3.11/3.12 not found; installing managed Python 3.12 (one-time)"
   if ! command -v uv >/dev/null 2>&1; then
@@ -62,8 +65,11 @@ fi
 if [ ! -x .venv/bin/python ]; then
   info "Creating isolated Python environment (one-time)"
   if "$PYTHON" -m venv .venv; then :; else
-    command -v uv >/dev/null 2>&1 || fail "Python venv unavailable; install python3-venv or uv."
-    uv venv --python "$PYTHON" .venv
+    if ! command -v uv >/dev/null 2>&1; then
+      curl -LsSf https://astral.sh/uv/install.sh | sh
+      export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+    fi
+    uv venv --python "$PYTHON" --seed .venv
   fi
 fi
 
