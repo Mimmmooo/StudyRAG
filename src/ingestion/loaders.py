@@ -1,8 +1,8 @@
 """Load page-aware text from text PDFs, scanned PDFs and study notes."""
 
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-import subprocess
 
 import fitz
 
