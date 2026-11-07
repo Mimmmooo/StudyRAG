@@ -2,6 +2,14 @@
 
 StudyRAG is free and open source. There are two supported *paths to try*: running on your own computer, or experimenting with Streamlit Community Cloud. The cloud option is not yet validated for StudyRAG's heavy ML dependencies, so a successful build and stable performance are **not guaranteed**.
 
+## Option 0: GitHub Codespaces (browser-only, experimental)
+
+For zero local software installation, use [Create a StudyRAG Codespace](https://github.com/codespaces/new?hide_repo_select=true&ref=fix%2Fcross-platform-reliability&repo=1448049876). Sign in to GitHub and create the Codespace in your browser. The repository's devcontainer installs all Python dependencies on the remote Linux machine and starts Streamlit automatically. Open the forwarded private port 8501 to use the app. No Ubuntu/macOS/Windows Python installation is required.
+
+Choose **Gemini** or **Groq** with a personal free-tier API key. Ollama isn't installed in this container, and the 2-core environment may not have adequate memory to run an LLM locally. This option does not require the user to run a terminal command at all.
+
+Codespaces is temporary and stops when idle. It is **not** an always-on deployment or a general public backend. Compute and storage consume the personal GitHub account's included monthly quota, and usage outside that allowance may be billed. Stop/delete Codespaces when finished and don't enable paid overages. Uploaded notes live on the remote Codespace during the session; don't upload sensitive material.
+
 ## Option A: Local development (recommended and tested)
 
 ### Requirements
