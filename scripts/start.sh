@@ -44,7 +44,13 @@ for candidate in python3.12 python3.11; do
   fi
 done
 if ! command -v curl >/dev/null 2>&1; then
-  fail "curl is required. Install it once (Ubuntu: sudo apt install curl)."
+  if [ "$(uname -s)" = Linux ] && command -v apt-get >/dev/null 2>&1; then
+    info "Installing missing curl (one-time)"
+    sudo apt-get update
+    sudo apt-get install -y curl
+  else
+    fail "curl is required. Install curl once and rerun this script."
+  fi
 fi
 if [ -z "$PYTHON" ]; then
   info "Python 3.11/3.12 not found; installing managed Python 3.12 (one-time)"
