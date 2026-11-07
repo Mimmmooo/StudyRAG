@@ -1,8 +1,12 @@
 """StudyRAG chat interface; document and RAG logic lives in src/."""
 
+import os
+
+import requests
 import streamlit as st
 
 from src.llm.base import LLMError
+from src.provider_selection import select_default_provider
 from src.rag.models import Citation
 from src.ui_service import StudySession
 
@@ -21,22 +25,75 @@ def _render_sources(sources: tuple[Citation, ...]) -> None:
             st.text(source.text)
 
 
+@st.cache_data(ttl=60, show_spinner=False)
+def _ollama_online() -> bool:
+    """Check whether a local Ollama service is reachable from this server."""
+    try:
+        return requests.get(
+            os.getenv("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
+            + "/api/tags",
+            timeout=0.6,
+        ).ok
+    except requests.RequestException:
+        return False
+
+
+def _hosted_key(name: str) -> str | None:
+    """Read server-managed keys without displaying them in the UI."""
+    try:
+        key = st.secrets.get(name)
+    except (FileNotFoundError, KeyError):
+        key = None
+    return str(key) if key else os.getenv(name) or None
+
+
 def _sidebar(session: StudySession) -> tuple[str, str | None, int]:
     """Configure model, retrieval, uploads and a fresh chat."""
     with st.sidebar:
         st.header("Study settings")
-        provider = st.selectbox("LLM provider", ["extractive", "ollama", "gemini", "groq"])
-        key = None
-        if provider in {"gemini", "groq"}:
+        server_keys = {
+            "groq": _hosted_key("GROQ_API_KEY"),
+            "gemini": _hosted_key("GEMINI_API_KEY"),
+        }
+        available_ollama = _ollama_online()
+        default_provider = select_default_provider(
+            ollama_available=available_ollama,
+            groq_key=server_keys["groq"],
+            gemini_key=server_keys["gemini"],
+        )
+        choices = ["ollama", "groq", "gemini", "extractive"]
+        # A versioned widget key avoids retained values from older deployments.
+        provider = st.selectbox(
+            "Answer mode",
+            choices,
+            index=choices.index(default_provider),
+            key="answer_mode_v2",
+            format_func=lambda value: {
+                "ollama": "Ollama (local AI)",
+                "groq": "Groq (AI answer)",
+                "gemini": "Gemini (AI answer)",
+                "extractive": "Source passages (no AI)",
+            }[value],
+        )
+        key = server_keys.get(provider)
+        if provider in {"gemini", "groq"} and not key:
             key = st.text_input(
                 f"{provider.title()} API key",
                 type="password",
-                help="Not saved to files or version control.",
+                help="Your key is used for this session and not stored in the repository.",
             )
+        elif provider in {"gemini", "groq"}:
+            st.caption("AI answers are enabled by the app owner.")
         elif provider == "ollama":
-            st.caption("Local Ollama requires qwen2.5:3b.")
+            if available_ollama:
+                st.caption("Local Ollama is available and will generate answers.")
+            else:
+                st.warning(
+                    "Ollama is unavailable on this server. For cloud AI answers, "
+                    "the app owner must configure a Gemini or Groq key."
+                )
         else:
-            st.caption("No API key needed. Shows matching note passages, not an AI-written answer.")
+            st.caption("No key required. Shows relevant source text, not a generated AI explanation.")
         top_k = st.slider(
             "Passages to retrieve",
             min_value=1,
@@ -50,12 +107,25 @@ def _sidebar(session: StudySession) -> tuple[str, str | None, int]:
             accept_multiple_files=True,
             help="Text PDFs, TXT and MD. Maximum 200 MB per file. Large PDFs may exceed free hosting memory.",
         )
-        if st.button("Index selected files", disabled=not uploads, use_container_width=True):
+        if uploads:
+            st.caption(
+                f"Ready to index {len(uploads)} file(s). Large books may take longer."
+            )
+        if st.button(
+            "Index selected files",
+            disabled=not bool(uploads),
+            use_container_width=True,
+            type="primary",
+        ):
             try:
                 with st.spinner("Reading and indexing notes..."):
                     counts = session.ingest(uploads or [])
-            except (ValueError, OSError) as exc:
-                st.error(str(exc))
+            except (ValueError, OSError, RuntimeError, MemoryError) as exc:
+                st.error(f"Could not index documents: {exc}")
+                st.info(
+                    "If a large PDF fails, try a smaller text-based PDF first. "
+                    "Cloud memory limits may prevent very large textbooks from indexing."
+                )
             else:
                 st.success(
                     "Indexed: " + ", ".join(
@@ -76,7 +146,7 @@ def _sidebar(session: StudySession) -> tuple[str, str | None, int]:
             st.session_state.pop("study_session", None)
             st.session_state.pop("messages", None)
             st.rerun()
-        st.caption("Your notes are indexed in a temporary local session.")
+        st.caption("Indexed text is stored temporarily on this app server.")
     return provider, key, top_k
 
 
@@ -97,7 +167,7 @@ def main() -> None:
         layout="centered",
     )
     st.title("📚 StudyRAG")
-    st.caption("Study your own notes with local retrieval and page citations.")
+    st.caption("Chat with your notes and inspect file/page citations.")
     session = _session()
     provider, key, top_k = _sidebar(session)
 
