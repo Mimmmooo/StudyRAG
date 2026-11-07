@@ -175,13 +175,13 @@ def test_ingestion_prepares_all_files_before_mutating_index(tmp_path: Path) -> N
     "Fact with invented source [9]",
     "Fact without a citation",
 ])
-def test_ungrounded_citation_markers_are_rejected(answer: str) -> None:
-    """Only answers that cite an available passage can be returned."""
+def test_citation_markers_are_optional(answer: str) -> None:
+    """Local chat must not reject a completion for missing markers."""
     rag, _, llm = _pipeline()
     llm.generate.return_value = answer
     result = rag.ask("What does it store?")
-    assert result.answer == NOT_FOUND
-    assert result.citations == ()
+    assert result.answer == answer
+    assert result.citations
 
 
 def test_valid_citation_markers_still_work() -> None:
