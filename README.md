@@ -19,7 +19,7 @@ StudyRAG runs on your computer. Upload text-based PDFs, TXT or Markdown files; i
 - 💬 Follow-up-aware chat with recent conversational context
 - 🔖 Expandable citations with original filename, page number and passage text
 - 🎛️ Adjustable number of retrieved passages, 1–5
-- 🔌 Free local Ollama; optional Gemini/Groq free-tier API keys (BYOK)
+- 🔌 Keyless extractive search; free local Ollama; optional Gemini/Groq free-tier API keys (BYOK)
 - 🔒 Temporary per-browser-session index; clear notes and chat when finished
 - ✅ Ruff, pytest, GitHub Actions on Ubuntu, macOS and Windows with Python 3.11 and 3.12
 
