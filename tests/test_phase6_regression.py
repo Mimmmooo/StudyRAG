@@ -28,9 +28,11 @@ def test_image_only_pdf_reports_missing_text(tmp_path: Path) -> None:
     writer.add_blank_page(width=200, height=200)
     with pdf_path.open("wb") as output:
         writer.write(output)
-    with patch("src.ingestion.loaders._ocr_page", return_value=""):
-        with pytest.raises(ValueError, match="No extractable text"):
-            load_document(pdf_path)
+    with (
+        patch("src.ingestion.loaders._ocr_page", return_value=""),
+        pytest.raises(ValueError, match="No extractable text"),
+    ):
+        load_document(pdf_path)
 
 
 def test_two_sources_retain_individual_file_and_page(tmp_path: Path) -> None:
