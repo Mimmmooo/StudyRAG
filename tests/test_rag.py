@@ -124,7 +124,7 @@ def test_author_name_must_appear_in_cited_evidence() -> None:
         [_match("কাকতাড়ুয়া\\nসত্যজিৎ রায়\\nগল্পের শুরু", 0.1)],
         "কাকতাড়ুয়া গল্পের লেখক রবীন্দ্রনাথ ঠাকুর [1]",
     )
-    assert rag.ask("কাকতাড়ুয়া গল্পের লেখক কে?").citations
+    assert not rag.ask("কাকতাড়ুয়া গল্পের লেখক কে?").citations
 
 
 def test_author_attribution_accepts_matching_source() -> None:
@@ -161,4 +161,4 @@ def test_unverified_author_reports_specific_reason() -> None:
         [_match("কাকতাড়ুয়া\\nসত্যজিৎ রায়", 0.1)],
         "লেখক: রবীন্দ্রনাথ ঠাকুর [1]",
     )
-    assert rag.ask("কাকতাড়ুয়া গল্পের লেখক কে?").answer == "লেখক: রবীন্দ্রনাথ ঠাকুর [1]"
+    assert rag.ask("কাকতাড়ুয়া গল্পের লেখক কে?").answer == NOT_FOUND
