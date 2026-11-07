@@ -9,6 +9,7 @@ from src.rag.evidence import (
     author_supported,
     explicit_author_from_passage,
     is_author_question,
+    numeric_detail_supported,
 )
 from src.rag.models import Citation, RAGAnswer
 from src.vectorstore.chroma_store import ChromaStore
@@ -196,6 +197,9 @@ class RAGPipeline:
         if is_author_question(question) and not isinstance(self.llm, ExtractiveProvider):
             if not author_supported(answer, "\n".join(item.text for item in citations)):
                 self.last_failure_reason = "The named author is absent from retrieved text."
+                return RAGAnswer(NOT_FOUND, ())
+            if not numeric_detail_supported(answer, "\n".join(item.text for item in citations)):
+                self.last_failure_reason = "The author answer contains an unsupported number."
                 return RAGAnswer(NOT_FOUND, ())
         # Citations are optional in the simplified chat experience.
         # Keep the retrieved evidence internally for diagnostics, but never
