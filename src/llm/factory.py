@@ -5,11 +5,12 @@ from typing import Literal
 
 from src.config import Settings
 from src.llm.base import BaseLLMProvider, LLMError
+from src.llm.extractive_provider import ExtractiveProvider
 from src.llm.gemini_provider import GeminiProvider
 from src.llm.groq_provider import GroqProvider
 from src.llm.ollama_provider import OllamaProvider
 
-ProviderName = Literal["ollama", "gemini", "groq"]
+ProviderName = Literal["extractive", "ollama", "gemini", "groq"]
 
 
 def create_provider(
@@ -21,6 +22,8 @@ def create_provider(
 ) -> BaseLLMProvider:
     """Choose a provider; explicit BYOK keys override environment variables."""
     settings = settings or Settings()
+    if provider == "extractive":
+        return ExtractiveProvider()
     if provider == "ollama":
         return OllamaProvider(
             model=model or settings.ollama_model,
