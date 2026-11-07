@@ -7,7 +7,6 @@ import requests
 import streamlit as st
 
 from src.llm.base import LLMError
-from src.provider_selection import select_default_provider
 from src.ui_service import MAX_UPLOAD_MB, StudySession
 
 
@@ -53,65 +52,22 @@ def _ollama_online() -> bool:
         return False
 
 
-def _configured_key(name: str) -> str | None:
-    """Read optional provider keys from local environment variables."""
-    return os.getenv(name) or None
-
-
 def _sidebar(session: StudySession) -> tuple[str, str | None, int]:
     """Configure model, retrieval, uploads and a fresh chat."""
     with st.sidebar:
         st.header("Study settings")
         st.caption(f"Upload limit: {MAX_UPLOAD_MB} MB per file · OCR-enabled build")
-        server_keys = {
-            "groq": _configured_key("GROQ_API_KEY"),
-            "gemini": _configured_key("GEMINI_API_KEY"),
-        }
-        available_ollama = _ollama_online()
-        default_provider = select_default_provider(
-            ollama_available=available_ollama,
-            groq_key=server_keys["groq"],
-            gemini_key=server_keys["gemini"],
-        )
-        choices = ["ollama", "groq", "gemini", "extractive"]
-        # A versioned widget key avoids retained values from older deployments.
-        provider = st.selectbox(
-            "Answer mode",
-            choices,
-            index=choices.index(default_provider),
-            key="answer_mode_v2",
-            format_func=lambda value: {
-                "ollama": "Ollama (local AI)",
-                "groq": "Groq (AI answer)",
-                "gemini": "Gemini (AI answer)",
-                "extractive": "Source passages (no AI)",
-            }[value],
-        )
-        key = server_keys.get(provider)
-        if provider in {"gemini", "groq"} and not key:
-            key = st.text_input(
-                f"{provider.title()} API key",
-                type="password",
-                help="Your key is used for this session and not stored in the repository.",
-            )
-        elif provider in {"gemini", "groq"}:
-            st.caption("Using an API key from the local environment.")
-        elif provider == "ollama":
-            if available_ollama:
-                st.caption("Local Ollama is available and will generate answers.")
-            else:
-                st.warning(
-                    "Ollama is not running on this computer. Start StudyRAG with "
-                    "scripts/start.sh (Linux/macOS) or scripts/start.ps1 (Windows)."
-                )
-        else:
-            st.caption("No key required. Shows relevant source text, not a generated AI explanation.")
+        provider = "ollama"
+        key = None
+        st.caption("AI: Ollama · qwen2.5:3b recommended for 8 GB RAM")
+        if not _ollama_online():
+            st.warning("Start Ollama using the StudyRAG launcher before asking questions.")
         top_k = st.slider(
             "Passages to retrieve",
             min_value=1,
-            max_value=5,
-            value=3,
-            help="More passages can improve coverage but use more context.",
+            max_value=4,
+            value=2,
+            help="Use 2 by default for quicker answers; raise for broader questions.",
         )
         uploads = st.file_uploader(
             "Upload your notes",
@@ -192,7 +148,6 @@ def main() -> None:
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-
 
     question = st.chat_input(
         "Ask about your notes or follow up on an answer",
