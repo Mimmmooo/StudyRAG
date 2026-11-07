@@ -1,13 +1,13 @@
 """StudyRAG chat interface; document and RAG logic lives in src/."""
 
 import os
+import re
 
 import requests
 import streamlit as st
 
 from src.llm.base import LLMError
 from src.provider_selection import select_default_provider
-from src.rag.models import Citation
 from src.ui_service import MAX_UPLOAD_MB, StudySession
 
 
@@ -16,22 +16,6 @@ def _session() -> StudySession:
     if "study_session" not in st.session_state:
         st.session_state.study_session = StudySession()
     return st.session_state.study_session
-
-
-def _render_sources(sources: tuple[Citation, ...]) -> None:
-    """Show compact, clickable file/page references beneath the answer."""
-    if not sources:
-        return
-    st.caption("Sources")
-    columns = st.columns(min(len(sources), 3), gap="small")
-    for index, source in enumerate(sources, start=1):
-        with (
-            columns[(index - 1) % len(columns)],
-            st.popover(f"📄 [{index}] Page {source.page}", use_container_width=True),
-        ):
-            st.caption(source.source)
-            st.markdown(f"**PDF page {source.page}**")
-            st.text(source.text)
 
 
 def _chat_styles() -> None:
@@ -133,7 +117,7 @@ def _sidebar(session: StudySession) -> tuple[str, str | None, int]:
             "Upload your notes",
             type=["pdf", "txt", "md"],
             accept_multiple_files=True,
-            help=f"PDF, TXT and MD. Maximum {MAX_UPLOAD_MB} MB per file. Large PDFs may exceed free hosting memory.",
+            help=f"PDF, TXT and MD. Maximum {MAX_UPLOAD_MB} MB per file. Large scanned PDFs may require extra RAM.",
         )
         if uploads:
             st.caption(
@@ -188,7 +172,7 @@ def _history() -> list[tuple[str, str]]:
 
 
 def main() -> None:
-    """Render notes upload, follow-up chat and page-aware citations."""
+    """Render local notes upload and simple grounded chat."""
     st.set_page_config(
         page_title="StudyRAG · Chat with notes",
         page_icon="📚",
@@ -196,7 +180,7 @@ def main() -> None:
     )
     _chat_styles()
     st.title("📚 StudyRAG")
-    st.caption("Ask a question. Every source chip opens the exact retrieved PDF passage.")
+    st.caption("Upload your notes and ask questions in Bangla or English.")
     session = _session()
     provider, key, top_k = _sidebar(session)
 
@@ -208,7 +192,7 @@ def main() -> None:
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-            _render_sources(message.get("sources", ()))
+
 
     question = st.chat_input(
         "Ask about your notes or follow up on an answer",
@@ -232,23 +216,22 @@ def main() -> None:
                     top_k=top_k,
                 )
             answer = result.answer
-            sources = result.citations
             failed = False
         except (LLMError, ValueError, OSError) as exc:
             answer = f"Could not answer: {exc}"
-            sources = ()
             failed = True
-        st.markdown(answer)
-        if not sources and not failed and session.last_debug:
+        # Older local models sometimes append numeric source markers.
+        display_answer = re.sub(r"\s*\[\d+\]", "", answer)
+        st.markdown(display_answer)
+        if not failed and answer.startswith("I couldn't find") and session.last_debug:
             with st.expander("Why was no answer found?"):
                 st.write(f"Reason: {session.last_debug.get('failure_reason') or 'Unknown'}")
                 st.write(f"Indexed chunks: {session.last_debug['indexed_chunks']}")
                 st.write(f"Retrieval cutoff: {session.last_debug['threshold']}")
                 st.write(f"Nearest passages: {session.last_debug['matches']}")
                 st.write(f"Model response: {session.last_debug['model_answer']!r}")
-        _render_sources(sources)
     st.session_state.messages.append(
-        {"role": "assistant", "content": answer, "sources": sources, "error": failed}
+        {"role": "assistant", "content": display_answer, "error": failed}
     )
 
 
