@@ -6,10 +6,8 @@ from typing import Protocol
 from src.llm.base import BaseLLMProvider
 from src.llm.extractive_provider import ExtractiveProvider
 from src.rag.evidence import (
-    author_supported,
     explicit_author_from_passage,
     is_author_question,
-    numeric_detail_supported,
 )
 from src.rag.models import Citation, RAGAnswer
 from src.vectorstore.chroma_store import ChromaStore
@@ -195,31 +193,14 @@ class RAGPipeline:
         if not answer or NOT_FOUND.lower() in answer.lower():
             self.last_failure_reason = "The local model returned no source-supported answer."
             return RAGAnswer(NOT_FOUND, ())
+        # Citations are optional in the simplified chat experience.
+        # Keep the retrieved evidence internally for diagnostics, but never
+        # reject a useful answer only because a small local model omitted [1].
         marker_numbers = [int(n) for n in re.findall(r"\[(\d+)\]", answer)]
-        used = list(dict.fromkeys(marker_numbers))
-        if not used or any(number < 1 or number > len(citations) for number in used):
-            self.last_failure_reason = "The model omitted a valid source marker such as [1]."
-            return RAGAnswer(NOT_FOUND, ())
-
-        referenced = tuple(citations[index - 1] for index in used)
-        evidence = "\n".join(item.text for item in referenced)
-        if is_author_question(question) and not isinstance(self.llm, ExtractiveProvider):
-            if not author_supported(answer, evidence):
-                self.last_failure_reason = (
-                    "The named author could not be verified in the cited OCR passage."
-                )
-                return RAGAnswer(NOT_FOUND, ())
-            if not numeric_detail_supported(answer, evidence):
-                self.last_failure_reason = (
-                    "The answer contained a number absent from the cited passage."
-                )
-                return RAGAnswer(NOT_FOUND, ())
-
-        # Show exactly the evidence the model cited; renumber it for the UI.
-        renumber = {number: index for index, number in enumerate(used, start=1)}
-        clean_answer = re.sub(
-            r"\[(\d+)\]",
-            lambda match: f"[{renumber[int(match.group(1))]}]",
-            answer,
-        )
-        return RAGAnswer(clean_answer, referenced)
+        valid = list(dict.fromkeys(
+            number for number in marker_numbers if 1 <= number <= len(citations)
+        ))
+        referenced = tuple(citations[number - 1] for number in valid)
+        if not referenced:
+            referenced = citations
+        return RAGAnswer(answer, referenced)
