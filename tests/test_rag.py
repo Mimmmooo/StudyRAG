@@ -143,3 +143,24 @@ def test_author_answer_rejects_invented_page_number() -> None:
         "কাকতাড়ুয়া গল্পের লেখক সত্যজিৎ রায় ১৭ পৃষ্ঠায় ছিলেন [1]",
     )
     assert not rag.ask("কাকতাড়ুয়া গল্পের লেখক কে?").citations
+
+
+def test_retrieval_failure_reports_clear_reason() -> None:
+    rag, _, _, _ = _pipeline([_match("Irrelevant", 1.8)])
+    assert rag.ask("Where?").answer == NOT_FOUND
+    assert "relevance threshold" in rag.last_failure_reason
+
+
+def test_missing_source_marker_reports_reason() -> None:
+    rag, _, _, _ = _pipeline([_match("Relevant text")], "Answer without citation.")
+    assert rag.ask("What?").answer == NOT_FOUND
+    assert "source marker" in rag.last_failure_reason
+
+
+def test_unverified_author_reports_specific_reason() -> None:
+    rag, _, _, _ = _pipeline(
+        [_match("কাকতাড়ুয়া\\nসত্যজিৎ রায়", 0.1)],
+        "লেখক: রবীন্দ্রনাথ ঠাকুর [1]",
+    )
+    assert rag.ask("কাকতাড়ুয়া গল্পের লেখক কে?").answer == NOT_FOUND
+    assert "author" in rag.last_failure_reason
