@@ -4,6 +4,7 @@ import re
 from typing import Protocol
 
 from src.llm.base import BaseLLMProvider
+from src.llm.extractive_provider import ExtractiveProvider
 from src.rag.evidence import (
     author_supported,
     is_author_question,
@@ -138,7 +139,7 @@ class RAGPipeline:
 
         referenced = tuple(citations[index - 1] for index in used)
         evidence = "\n".join(item.text for item in referenced)
-        if is_author_question(question):
+        if is_author_question(question) and not isinstance(self.llm, ExtractiveProvider):
             if not author_supported(answer, evidence):
                 return RAGAnswer(NOT_FOUND, ())
             if not numeric_detail_supported(answer, evidence):
