@@ -1,5 +1,8 @@
 """Load page-aware text from text PDFs, scanned PDFs and study notes."""
 
+import hashlib
+import json
+import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -7,7 +10,7 @@ from pathlib import Path
 import fitz
 
 SUPPORTED_SUFFIXES = {".pdf", ".txt", ".md"}
-OCR_DPI = 140
+OCR_DPI = 130
 OCR_TIMEOUT_SECONDS = 30
 
 
@@ -38,6 +41,7 @@ def _ocr_page(page: fitz.Page) -> str:
             capture_output=True,
             timeout=OCR_TIMEOUT_SECONDS,
             check=False,
+            env={**os.environ, "OMP_THREAD_LIMIT": "1"},
         )
     except FileNotFoundError as exc:
         raise ValueError(
@@ -56,8 +60,53 @@ def _ocr_page(page: fitz.Page) -> str:
     return _clean(result.stdout.decode("utf-8", errors="replace"))
 
 
+def _cache_path(path: Path) -> Path:
+    """Locate a local, versioned OCR cache by the PDF contents."""
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    root = Path(os.getenv("STUDYRAG_OCR_CACHE_DIR", str(Path.home() / ".cache" / "studyrag" / "ocr")))
+    return root / f"{digest.hexdigest()}-dpi{OCR_DPI}-v1.json"
+
+
+def _read_cached_pages(cache: Path, source: str) -> list[DocumentPage] | None:
+    """Read reusable page text, falling back to OCR if the cache is damaged."""
+    if not cache.is_file():
+        return None
+    try:
+        rows = json.loads(cache.read_text(encoding="utf-8"))
+        if not isinstance(rows, list) or not rows:
+            return None
+        return [
+            DocumentPage(row["text"], source, int(row["page"]))
+            for row in rows
+            if isinstance(row.get("text"), str) and row["text"].strip()
+        ] or None
+    except (OSError, ValueError, TypeError, KeyError, AttributeError):
+        return None
+
+
+def _save_cached_pages(cache: Path, pages: list[DocumentPage]) -> None:
+    """Save extracted text locally only after the full PDF succeeds."""
+    try:
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        temp = cache.with_suffix(".tmp")
+        temp.write_text(
+            json.dumps([{"text": row.text, "page": row.page} for row in pages], ensure_ascii=False),
+            encoding="utf-8",
+        )
+        temp.replace(cache)
+    except OSError:
+        pass  # Caching is optional; never fail indexing due to cache permissions.
+
+
 def _load_pdf(path: Path) -> list[DocumentPage]:
     """Process one PDF page at a time to avoid holding page images in RAM."""
+    cache = _cache_path(path)
+    cached = _read_cached_pages(cache, path.name)
+    if cached is not None:
+        return cached
     pages: list[DocumentPage] = []
     try:
         with fitz.open(path) as document:
@@ -73,6 +122,7 @@ def _load_pdf(path: Path) -> list[DocumentPage]:
         raise ValueError(f"Could not read PDF {path.name}: {exc}") from exc
     if not pages:
         raise ValueError(f"No extractable text in {path.name}, even after OCR.")
+    _save_cached_pages(cache, pages)
     return pages
 
 
