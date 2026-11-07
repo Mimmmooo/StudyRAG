@@ -23,6 +23,20 @@ StudyRAG runs on your computer. Upload text-based PDFs, TXT or Markdown files; i
 - 🔒 Temporary per-browser-session index; clear notes and chat when finished
 - ✅ Ruff, pytest, GitHub Actions on Ubuntu, macOS and Windows with Python 3.11 and 3.12
 
+## Easiest option for students: public web app (one-time deployment by owner)
+
+Students should **not** need GitHub accounts, Codespaces, terminals, or installations. Publish StudyRAG once on [Streamlit Community Cloud](https://share.streamlit.io/), then share the generated `*.streamlit.app` URL. Anyone can open the public site and upload notes.
+
+**One-time deployment (repository admin/owner):**
+1. Sign in at [Streamlit Community Cloud](https://share.streamlit.io/) with the GitHub repository owner's account.
+2. Create app from repository `Mimmmooo/StudyRAG`, branch `fix/cross-platform-reliability` for pre-merge testing (switch to `main` after merge), entrypoint `app.py`; use **Python 3.12**.
+3. Deploy and test with `examples/sample_notes.txt`, selecting **extractive** (no API key, no external LLM) and asking `What does ChromaDB store?`.
+4. Share the live `streamlit.app` link with students. The owner manages updates; students simply open the link.
+
+**AI responses:** The default **extractive** option returns a matching source excerpt rather than a generated explanation. Students can optionally choose **gemini** or **groq** with their own free-tier key for generated answers. Local Ollama requires a local model server and is not available in the hosted instance. Uploaded documents are processed on the hosting server; extracted passages are stored in a temporary per-session index. Do not upload confidential documents. Free hosting has resource limits and may sleep when idle. This deployment path must be smoke-tested before sharing widely.
+
+**Hosting improvements:** Default embeddings now use CPU-friendly FastEmbed/ONNX rather than PyTorch. For offline use with optional sentence-transformers models, install `requirements-local.txt` and configure `STUDYRAG_EMBEDDING_MODEL`; do not mix models in the same vector collection.
+
 ## Run in GitHub cloud (no local installation)
 
 **Recommended for Ubuntu, Windows, and macOS users who don't want to install Python, packages, Ollama, or Git locally.**
