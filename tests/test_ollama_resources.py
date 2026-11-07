@@ -24,9 +24,8 @@ def test_ollama_timeout_explains_ram_and_alternatives() -> None:
     with patch(
         "src.llm.ollama_provider.post_json",
         side_effect=LLMError("Model request timed out. Try again."),
-    ):
-        with pytest.raises(LLMError, match="reduce passages to 2-3"):
-            OllamaProvider(model="qwen3:4b").generate("question")
+    ), pytest.raises(LLMError, match="reduce passages to 2-3"):
+        OllamaProvider(model="qwen3:4b").generate("question")
 
 
 def test_qwen_uses_no_think_prompt() -> None:
