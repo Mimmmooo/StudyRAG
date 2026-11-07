@@ -31,10 +31,10 @@ def _recent_history(history: list[tuple[str, str]] | None) -> list[tuple[str, st
 
 _FOLLOWUP_START = re.compile(
     r"^(?:সে|তার|তারা|তিনি|ওরা|এটা|এটি|ওটি|সেটা|তাহলে|কেন|কীভাবে|আর |"
-    r"it\\b|they\\b|he\\b|she\\b|why\\b|how\\b|and\\b)",
+    r"it\b|they\b|he\b|she\b|why\b|how\b|and\b|tell me more\b|what does (?:it|he|she|they)\b)",
     re.IGNORECASE,
 )
-_NUMBERED_QUESTION = re.compile(r"(?<!\\S)\\d{1,2}[.)]\\s+")
+_NUMBERED_QUESTION = re.compile(r"(?<!\S)\d{1,2}[.)]\s+")
 
 
 def _split_questions(question: str) -> list[str]:
@@ -103,7 +103,7 @@ class RAGPipeline:
             answer = result.answer
             offset = len(sources)
             answer = re.sub(
-                r"\\[(\\d+)\\]",
+                r"\[(\d+)\]",
                 lambda marker: f"[{offset + int(marker.group(1))}]",
                 answer,
             )
