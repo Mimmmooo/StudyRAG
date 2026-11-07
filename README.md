@@ -21,11 +21,11 @@ StudyRAG runs on your computer. Upload text-based PDFs, TXT or Markdown files; i
 - 🎛️ Adjustable number of retrieved passages, 1–5
 - 🔌 Free local Ollama; optional Gemini/Groq free-tier API keys (BYOK)
 - 🔒 Temporary per-browser-session index; clear notes and chat when finished
-- ✅ Ruff, pytest, GitHub Actions on Python 3.11 and 3.12
+- ✅ Ruff, pytest, GitHub Actions on Ubuntu, macOS and Windows with Python 3.11 and 3.12
 
 ## Run StudyRAG locally
 
-Requirements: **Python 3.11 or 3.12** and a Mac/Linux computer. You can use the free Ollama app for AI responses, without any API key.
+Requirements: **Python 3.11 or 3.12** on Ubuntu/Linux, macOS, or Windows. You can use the free Ollama app for AI responses, without any API key.
 
 ```bash
 git clone https://github.com/Mimmmooo/StudyRAG.git
@@ -77,6 +77,43 @@ python -m pytest -q
 python -m streamlit run app.py
 ```
 
+### Ubuntu / Debian
+
+Install Python, pip, venv and Git first (Ubuntu 22.04+; install Python 3.11 or 3.12 if your distribution uses an older default).
+
+```bash
+sudo apt update
+sudo apt install -y git python3 python3-venv python3-pip
+git clone https://github.com/Mimmmooo/StudyRAG.git
+cd StudyRAG
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements-dev.txt
+python -m ruff check .
+python -m pytest -q
+python -m streamlit run app.py
+```
+
+For local inference, install Ollama from its official Linux instructions, start its service, and run `ollama pull qwen2.5:3b`. Or use your own Gemini/Groq free-tier API key.
+
+### Windows (PowerShell)
+
+Install Git and Python 3.11 or 3.12 from their official installers (enable the Python launcher). Then open PowerShell:
+
+```powershell
+git clone https://github.com/Mimmmooo/StudyRAG.git
+cd StudyRAG
+py -3.12 -m venv .venv
+.\\.venv\\Scripts\\python.exe -m pip install -r requirements-dev.txt
+.\\.venv\\Scripts\\python.exe -m ruff check .
+.\\.venv\\Scripts\\python.exe -m pytest -q
+.\\.venv\\Scripts\\python.exe -m streamlit run app.py
+```
+
+Use `py -3.11` instead if Python 3.11 is installed. This method does not require enabling PowerShell script execution. Install Ollama for Windows and pull `qwen2.5:3b`, or select Gemini/Groq with your own free-tier API key.
+
+**Cross-platform coverage:** GitHub Actions runs Ruff and offline pytest on Ubuntu, macOS and Windows with Python 3.11 and 3.12. Real Ollama/model download and Streamlit browser behavior still require manual checks on each OS.
+
 ## How it works
 
 ```text
@@ -108,8 +145,8 @@ The default smoke script uses a demo provider and does not generate a factual an
 
 - Scanned/image-only PDFs need OCR, which is not yet included.
 - TXT and MD files use page 1 as a citation placeholder.
-- Retrieved citations show candidate evidence; they do not automatically verify every generated claim.
-- Retrieval distance uses a demo cutoff and is not calibrated for all documents.
+- Generated answers must include valid numbered passage markers, but cited passages remain candidate evidence; they do not automatically verify every generated claim.
+- Retrieval distance uses a configurable demo cutoff (`STUDYRAG_MAX_DISTANCE`, default 2.0) and is not calibrated for all documents.
 - Follow-up awareness uses a limited number of recent messages, not permanent conversation memory.
 - Original uploads are removed after indexing, but extracted passages and embeddings remain in the temporary session index until cleared. The CLI index is stored in a separate local `.chroma/` folder.
 - Never commit API keys, `.env` files, private notes or vector databases. For especially sensitive notes, choose local Ollama rather than an external provider.
