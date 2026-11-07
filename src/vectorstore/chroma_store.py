@@ -66,7 +66,7 @@ class ChromaStore:
     def search_keywords(self, question: str, limit: int = 3) -> list[dict]:
         """Find Bengali/English phrases directly when embeddings miss titles."""
         tokens = [
-            token for token in re.findall(r"[\\w\\u0980-\\u09ff]+", question.casefold())
+            token for token in re.findall(r"[\w\u0980-\u09ff]+", question.casefold())
             if len(token) >= 3
             and token not in {"গল্পের", "লেখক", "লেখকের", "কে", "কী", "কি", "হয়", "সম্পর্কে", "বলো", "what", "who", "the", "does"}
         ]
