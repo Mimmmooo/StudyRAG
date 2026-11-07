@@ -12,7 +12,8 @@ from src.rag.models import RAGAnswer
 from src.rag.pipeline import RAGPipeline
 from src.vectorstore.chroma_store import ChromaStore
 
-MAX_UPLOAD_BYTES = 15 * 1024 * 1024
+MAX_UPLOAD_MB = 200
+MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
 
 
 class UploadedFile(Protocol):
@@ -49,7 +50,7 @@ class StudySession:
                 raise ValueError(f"Unsupported file type: {name}")
             data = upload.getvalue()
             if len(data) > MAX_UPLOAD_BYTES:
-                raise ValueError(f"{name} exceeds the 15 MB limit.")
+                raise ValueError(f"{name} exceeds the {MAX_UPLOAD_MB} MB limit.")
             if not data:
                 raise ValueError(f"{name} is empty.")
             payloads.append((name, data))
@@ -82,7 +83,7 @@ class StudySession:
             provider, api_key=api_key, settings=self.settings
         )
         pipeline = RAGPipeline(
-            self.embedder, self.store, llm, top_k=top_k, max_distance=2.0
+            self.embedder, self.store, llm, top_k=top_k, max_distance=self.settings.max_distance
         )
         self.last_debug = {}
         result = pipeline.ask(question, history=history)
@@ -98,6 +99,7 @@ class StudySession:
                 if isinstance(item.get("distance"), (int, float))
             ],
             "model_answer": pipeline.last_model_response,
+            "failure_reason": pipeline.last_failure_reason,
             "threshold": pipeline.max_distance,
         }
         return result

@@ -1,0 +1,3 @@
+-r requirements.txt
+# Optional full PyTorch-backed embedding models on a local workstation.
+sentence-transformers>=3,<6

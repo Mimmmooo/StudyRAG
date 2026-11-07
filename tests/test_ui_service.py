@@ -22,10 +22,15 @@ def test_rejects_unsupported_file() -> None:
         session.ingest([_upload("notes.exe", b"hello")])
 
 
+def test_upload_limit_is_200_mb() -> None:
+    """The app accepts files up to 200 MiB per file."""
+    assert MAX_UPLOAD_BYTES == 200 * 1024 * 1024
+
+
 def test_rejects_large_upload() -> None:
     """Large uploads fail before writing to disk."""
     session = StudySession.__new__(StudySession)
-    with pytest.raises(ValueError, match="15 MB"):
+    with pytest.raises(ValueError, match="200 MB"):
         session.ingest([_upload("notes.txt", b"x" * (MAX_UPLOAD_BYTES + 1))])
 
 

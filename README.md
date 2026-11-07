@@ -1,132 +1,125 @@
 # 📚 StudyRAG
 
-**A free, open-source study assistant for chatting with your own notes, with file and page citations.**
+**Free, open-source, local-first RAG study assistant.** Upload PDF/TXT/Markdown notes and receive AI-written answers from your documents. The default AI uses **Ollama on your computer**, with **no API key** and no cloud hosting. Optional Gemini/Groq BYOK integrations remain available.
 
-StudyRAG runs on your computer. Upload text-based PDFs, TXT or Markdown files; it finds relevant passages and asks a language model to answer using your notes. Follow-up questions can refer to earlier turns. Source excerpts remain visible under each answer.
+![StudyRAG interface preview](docs/assets/studyrag-ui-preview.svg)
 
-**Status:** Open-source portfolio project. No cloud deployment is required. The GitHub repository is public and MIT licensed.
+## What works
 
-## Interface preview
+- PDF/TXT/MD upload (200 MiB per file; practical limit depends on your computer).
+- Bengali and English **scanned PDF OCR** using Tesseract, with a local OCR cache to speed repeat indexing.
+- Multilingual ONNX embeddings via FastEmbed and a temporary ChromaDB index per session.
+- Bengali keyword/title retrieval alongside vector similarity, without citation markers in chat.
+- Local Ollama-generated answers and follow-up questions with a simple chat interface.
+- Optional Gemini/Groq providers, keyless source-excerpt mode, and session reset.
+- Python 3.11/3.12, Streamlit, pytest, Ruff and CI on Ubuntu, macOS and Windows.
 
-![StudyRAG chat UI with local Ollama and source citations](docs/assets/studyrag-ui-preview.svg)
+## One command to run (Ubuntu / Linux)
 
-*Illustrated preview based on the locally tested Streamlit interface. Shows a question, a follow-up, and page-aware citations.*
+You need **Git and an internet connection the first time**. On Ubuntu, install Git once if it is missing: `sudo apt install git`.
 
-## Features
-
-- 📄 Upload multiple PDF, TXT and Markdown notes (15 MB per file)
-- 🧠 Local sentence-transformer embeddings and ChromaDB retrieval
-- 💬 Follow-up-aware chat with recent conversational context
-- 🔖 Expandable citations with original filename, page number and passage text
-- 🎛️ Adjustable number of retrieved passages, 1–5
-- 🔌 Free local Ollama; optional Gemini/Groq free-tier API keys (BYOK)
-- 🔒 Temporary per-browser-session index; clear notes and chat when finished
-- ✅ Ruff, pytest, GitHub Actions on Python 3.11 and 3.12
-
-## Run StudyRAG locally
-
-Requirements: **Python 3.11 or 3.12** and a Mac/Linux computer. You can use the free Ollama app for AI responses, without any API key.
+The **same command** works for first launch and every later launch. It updates the current feature branch (fast-forward only), then checks for and installs **only missing dependencies**:
 
 ```bash
-git clone https://github.com/Mimmmooo/StudyRAG.git
-cd StudyRAG
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements-dev.txt
-python -m ruff check .
-python -m pytest -q
-python -m streamlit run app.py
+bash -lc 'if [ ! -d "$HOME/StudyRAG/.git" ]; then git clone -b fix/cross-platform-reliability https://github.com/Mimmmooo/StudyRAG.git "$HOME/StudyRAG"; fi; cd "$HOME/StudyRAG" && git pull --ff-only && bash scripts/start.sh'
 ```
 
-Open **http://localhost:8501**.
+A browser opens at **http://localhost:8501** (or open it manually). Stop Streamlit using `Ctrl+C`. Next time run the **same command**: it skips installed packages and the already-downloaded model.
 
-### Start a local model (recommended)
+The first run automatically checks/sets up:
+1. Bengali and English Tesseract OCR (Ubuntu uses apt and may ask for your sudo password).
+2. Python **3.11 or 3.12**; if Ubuntu defaults to Python 3.14, it downloads its own managed Python 3.12 using uv instead of modifying system Python.
+3. A project-specific `.venv`. This is intentionally **not a global pip install**, to avoid breaking other Python projects. It persists across launches.
+4. Python packages *only* when `requirements.txt` changes or a required package is missing.
+5. The official Ollama app and **`qwen2.5:3b`** (recommended for 8 GB RAM) *only* when missing. Ollama models stay in Ollama's normal model cache. The Ollama server starts automatically if needed.
 
-Install [Ollama](https://ollama.com/download), then download the free model:
+**Requirements:** internet for the initial downloads; available disk space for OCR, Python packages and a ~2 GB LLM model; adequate RAM. GPU is optional, CPU inference may be slower. No paid service is required.
+
+## macOS
+
+With Git and [Homebrew](https://brew.sh/) available, use the same repository setup then start the app:
 
 ```bash
-ollama pull qwen2.5:3b
-ollama list
-curl http://localhost:11434/api/tags
+git clone -b fix/cross-platform-reliability https://github.com/Mimmmooo/StudyRAG.git ~/StudyRAG
+cd ~/StudyRAG && bash scripts/start.sh
 ```
 
-On macOS, Ollama often runs in the background. If `ollama serve` reports that port 11434 is already in use but the `curl` command returns model data, it is already running. Select **ollama** in StudyRAG.
+Later runs: `cd ~/StudyRAG && git pull --ff-only && bash scripts/start.sh`. The launcher uses Homebrew for OCR and Ollama (only when absent). It reuses the Python environment and downloaded model.
 
-Alternatively select **gemini** or **groq** and enter your own free-tier API key in the password field. These optional providers transmit retrieved note passages to their services.
+## Windows (PowerShell)
 
-### First test
+Install Git and Windows App Installer (`winget`) if not already present. Then:
 
-1. Upload `examples/sample_notes.txt` in the sidebar.
-2. Click **Index selected files**.
-3. Select Ollama (or a configured alternative).
-4. Ask **What does ChromaDB store?**
-5. The answer should mention vector storage and similar-passage search. Expand **[1] sample_notes.txt · page 1** to inspect the evidence.
-6. Follow up with **What are they used for?** to try the multi-turn context feature.
-
-Use **New chat** to reset only the conversation, or **Clear notes and chat** to remove the session index too.
-
-### Update an existing checkout
-
-```bash
-cd ~/StudyRAG
-git pull origin main
-source .venv/bin/activate
-python -m pip install -r requirements-dev.txt
-python -m ruff check .
-python -m pytest -q
-python -m streamlit run app.py
+```powershell
+git clone -b fix/cross-platform-reliability https://github.com/Mimmmooo/StudyRAG.git "$HOME\StudyRAG"
+Set-Location "$HOME\StudyRAG"
+powershell -ExecutionPolicy Bypass -File scripts\start.ps1
 ```
 
-## How it works
+Later runs: `Set-Location "$HOME\StudyRAG"; git pull --ff-only; powershell -ExecutionPolicy Bypass -File scripts\start.ps1`.
+
+The Windows launcher checks for Python, packages, Ollama, and Bengali/English OCR language data. Missing binaries can require a one-time Windows elevation/installer prompt. The user-level trained-data cache is not repeatedly downloaded.
+
+## Test with a real Bengali book
+
+1. Run the launcher. It ensures Ollama is reachable and `qwen2.5:3b` has been pulled.
+2. The sidebar should default to **Ollama (local AI)**.
+3. Upload a scanned Bengali PDF, including a textbook such as `Secondary (BV)-2026_Class 8_Anondopath_compressed.pdf`, then click **Index selected files**.
+4. Check the indexed chunk count, then ask **কাকতাড়ুয়া গল্পের লেখক কে?**
+5. The expected author is **সত্যজিৎ রায়**. Check generated answers against your original book, especially when OCR quality is poor.
+
+The 36.9 MB Bengali scanned book has been indexed successfully (167 chunks). This demonstrates one real-book success, **not** a guarantee that all 200 MB PDFs will index or that every OCR word will be correct. The current local bootstrap still requires a first-run smoke test on each OS.
+
+## How the components work
 
 ```text
-Upload files → Extract pages → Split into chunks → Local embeddings → ChromaDB
-                                                               ↓
-Question + recent turns → Embed query → Retrieve matching passages
-                                               ↓
-                                 Ollama / Gemini / Groq
-                                               ↓
-                                 Answer + [1], [2] citations
+Upload PDF / TXT / MD
+     |     (PyMuPDF + Bengali/English Tesseract OCR for scans)
+     v
+Page-aware chunks -> multilingual ONNX embeddings -> ChromaDB
+                                                    |
+Question -> vector + Bengali keyword retrieval ------+
+                         |
+                 Grounded context
+                         v
+              Local Ollama (default)
+                         v
+          AI-written answer (no citation markers)
 ```
 
-UI logic stays in `app.py`; document ingestion, embeddings, vector search, model adapters, and the RAG pipeline are separate modules under `src/`.
+The Streamlit UI (`app.py`) contains no ingestion or RAG business logic. The modules are separated under `src/ingestion`, `src/embeddings`, `src/vectorstore`, `src/llm`, and `src/rag`.
 
-For technical details, see [Architecture](docs/ARCHITECTURE.md).
+## Why Qwen2.5 3B?
 
-## Test the code
+Qwen3 4B repeatedly timed out or produced analysis instead of final Bengali answers on an 8 GB Ubuntu machine. The default `qwen2.5:3b` is a smaller non-thinking baseline; it is more practical for local CPU use, although Bengali answer accuracy is not guaranteed. Avoid forcing `OLLAMA_MODEL=qwen3:4b` unless you deliberately want to compare models. OCR uses one CPU thread per Tesseract invocation and a modest DPI reduction; first-time processing still depends on page count and hardware. Repeat uploads reuse locally cached OCR results when the file has not changed.
+
+## Other answer providers
+
+**Ollama is the local default, with no API key.** Gemini/Groq free-tier BYOK are optional. Never commit keys or notes to GitHub. When you select an external provider, retrieved passages and recent conversation context are sent to that provider. The **Source passages (no AI)** mode performs citation-based retrieval without a text generation model.
+
+To switch the locally downloaded Ollama model, set `OLLAMA_MODEL` before running the launcher. The model is pulled only when missing. `requirements-local.txt` is optional for experimenting with PyTorch-backed sentence-transformers models; the default multilingual ONNX model needs no PyTorch/CUDA download.
+
+## Testing and development
+
+Inside the repository, after the first launcher setup:
 
 ```bash
-python -m ruff check .
-python -m pytest -q
-python -m scripts.ingest examples/sample_notes.txt
-python -m scripts.rag_smoke
+.venv/bin/python -m ruff check .
+.venv/bin/python -m pytest -q
+.venv/bin/python -m scripts.ingest examples/sample_notes.txt
 ```
 
-The default smoke script uses a demo provider and does not generate a factual answer. `python -m scripts.rag_smoke --provider ollama` tests a live Ollama model. GitHub Actions checks Ruff and offline pytest on Python 3.11 and 3.12.
+On Windows use `.venv\Scripts\python.exe` instead. Ruff/pytest are developer tools: install once with `.venv/bin/python -m pip install -r requirements-dev.txt` (or the Windows equivalent) before running these checks. CI runs offline tests on three operating systems.
 
-## Limitations and privacy
+## Notes and limitations
 
-- Scanned/image-only PDFs need OCR, which is not yet included.
-- TXT and MD files use page 1 as a citation placeholder.
-- Retrieved citations show candidate evidence; they do not automatically verify every generated claim.
-- Retrieval distance uses a demo cutoff and is not calibrated for all documents.
-- Follow-up awareness uses a limited number of recent messages, not permanent conversation memory.
-- Original uploads are removed after indexing, but extracted passages and embeddings remain in the temporary session index until cleared. The CLI index is stored in a separate local `.chroma/` folder.
-- Never commit API keys, `.env` files, private notes or vector databases. For especially sensitive notes, choose local Ollama rather than an external provider.
+- Scanned OCR is best-effort and can misread characters, names, punctuation or columns. The app no longer displays citation markers or verifies each factual claim: check important answers against the original PDF.
+- 200 MiB is the upload ceiling, not a universal indexing performance guarantee. Processing speed depends on scan DPI, page count, RAM and CPU.
+- The local Streamlit server binds to `127.0.0.1`; it is **not** a public website. Data stays on your computer when using local Ollama.
+- PDF page numbers refer to physical pages of the uploaded PDF, which can differ from printed page numbers.
+- Index data is temporary for the browser session; original upload bytes are removed after indexing. OCR results are cached in `~/.cache/studyrag/ocr/` (or `STUDYRAG_OCR_CACHE_DIR`) to speed repeated uploads. Remove that folder if you want to erase cached extracted text. CLI ingestion uses the local `.chroma/` folder.
+- Automated CI and a manual local PDF/Ollama smoke test should pass before this branch is merged. Do not claim production-grade verification from an offline test alone.
 
-## Project progress
+## Project
 
-- [x] Phase 1: Setup
-- [x] Phase 2: PDF/TXT/MD ingestion, embeddings, ChromaDB
-- [x] Phase 3: Ollama, Gemini, Groq provider adapters
-- [x] Phase 4: Grounded RAG with citations
-- [x] Phase 5: Streamlit upload and chat
-- [x] Phase 6: Automated tests and CI
-- [x] Phase 7: README and architecture documentation
-- [x] Phase 8: Follow-up-aware chat, UI improvements, regression tests
-
-Cloud deployment is intentionally not part of this project's current goal. If you want to experiment with it later, see the optional [Deployment Guide](docs/DEPLOYMENT.md).
-
-## Contribute and license
-
-Pull requests and bug reports are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) and remove any secrets/private text from logs. The project is licensed under [MIT](LICENSE); you can use, modify, and redistribute it under that license.
+This is a student open-source portfolio project under the [MIT License](LICENSE). Technical structure: [Architecture](docs/ARCHITECTURE.md). Contributions: [CONTRIBUTING](CONTRIBUTING.md).

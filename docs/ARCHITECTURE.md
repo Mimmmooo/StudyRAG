@@ -61,7 +61,7 @@ PDF page numbers are 1-based, derived from the text layer. TXT/MD are treated as
 
 ## Model separation
 
-`BaseLLMProvider.generate(prompt)` defines the shared provider interface. The factory selects local Ollama or optional Gemini/Groq APIs. The RAG pipeline does not need to know which provider was selected. Recent chat turns (up to six, with each text clipped to 500 characters) help resolve follow-up references, but only newly retrieved file passages count as factual evidence. API keys are supplied by the user/environment and should never be committed.
+`BaseLLMProvider.generate(prompt)` defines the shared provider interface. The factory selects local Ollama or optional Gemini/Groq APIs. The RAG pipeline does not need to know which provider was selected. Its output requires numbered citation markers that reference retrieved chunks; this only validates marker indices, not the truth of each claim. Recent chat turns (up to six, with each text clipped to 500 characters) help resolve follow-up references, but only newly retrieved file passages count as factual evidence. API keys are supplied by the user/environment and should never be committed.
 
 ## Storage and trust boundaries
 
@@ -70,6 +70,6 @@ PDF page numbers are 1-based, derived from the text layer. TXT/MD are treated as
 - A public hosted deployment transfers documents to the server, and third-party providers receive retrieved passages. No authentication or full production isolation guarantees are implemented.
 - Document text is untrusted input and is passed to the LLM as reference context. The system prompt requests grounded answers, but prompt injection and unsupported model claims are not eliminated.
 
-## Testing
+Document re-indexing removes existing chunks for the same filename after all uploaded files have been parsed and embedded. Failed parsing/embedding therefore does not partially replace old data. Storage updates are not a full database transaction, so runtime storage failures can still cause partial updates.\n\n## Testing
 
-`python -m ruff check .` checks lint; `python -m pytest -q` runs offline tests. GitHub Actions runs both on Python 3.11 and 3.12. The local Ollama live test is a separate manual check. No hosted deployment is required for this portfolio project.
+`python -m ruff check .` checks lint; `python -m pytest -q` runs offline tests. GitHub Actions runs on Ubuntu, macOS and Windows, each with Python 3.11 and 3.12. The local Ollama live test is a separate manual check. No hosted deployment is required for this portfolio project.
