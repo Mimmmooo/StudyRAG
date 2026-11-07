@@ -6,10 +6,8 @@ from typing import Protocol
 from src.llm.base import BaseLLMProvider
 from src.llm.extractive_provider import ExtractiveProvider
 from src.rag.evidence import (
-    author_supported,
     explicit_author_from_passage,
     is_author_question,
-    numeric_detail_supported,
 )
 from src.rag.models import Citation, RAGAnswer
 from src.vectorstore.chroma_store import ChromaStore
@@ -192,15 +190,13 @@ class RAGPipeline:
         if not answer or NOT_FOUND.lower() in answer.lower():
             self.last_failure_reason = "The local model returned no source-supported answer."
             return RAGAnswer(NOT_FOUND, ())
-        # Verify factual author names against retrieved document text,
-        # independently of whether the model emitted any citation marker.
-        if is_author_question(question) and not isinstance(self.llm, ExtractiveProvider):
-            if not author_supported(answer, "\n".join(item.text for item in citations)):
-                self.last_failure_reason = "The named author is absent from retrieved text."
-                return RAGAnswer(NOT_FOUND, ())
-            if not numeric_detail_supported(answer, "\n".join(item.text for item in citations)):
-                self.last_failure_reason = "The author answer contains an unsupported number."
-                return RAGAnswer(NOT_FOUND, ())
+        # User-facing citations are disabled. A model may answer correctly even
+        # when Bengali OCR spells the same name differently; do not reject all
+        # such answers on a brittle substring check. Keep the source-only prompt.
+        if is_author_question(question):
+            # Remove an isolated trailing number that local models sometimes
+            # append without context (e.g. "সত্যজিৎ রায় ১৭").
+            answer = re.sub(r"\s+[০-৯0-9]+\s*$", "", answer).strip()
         # Citations are optional in the simplified chat experience.
         # Keep the retrieved evidence internally for diagnostics, but never
         # reject a useful answer only because a small local model omitted [1].
