@@ -2,6 +2,10 @@
 
 StudyRAG is free and open source. There are two supported *paths to try*: running on your own computer, or experimenting with Streamlit Community Cloud. The cloud option is not yet validated for StudyRAG's heavy ML dependencies, so a successful build and stable performance are **not guaranteed**.
 
+## Generated AI answers for visitors
+
+After deploying, the **owner** can open **Manage app → Settings → Secrets** and set `GROQ_API_KEY = "your-free-tier-key"` (or `GEMINI_API_KEY`). Do not commit any real keys. The app defaults to the configured provider for hosted AI answers, and to Ollama only when its service is actually reachable on the same computer. Visitors need no key when the owner's provider is configured, but the provider's free quota is shared and may run out. Uploaded passages and recent prompts go to the provider. If no key is configured, extractive mode remains usable without generated prose.
+
 ## Recommended for end users: Streamlit Community Cloud
 
 The repository owner deploys **once** at https://share.streamlit.io/ using repository `Mimmmooo/StudyRAG`, branch `fix/cross-platform-reliability` for pre-merge validation, and file `app.py`, with Python 3.12. Share the resulting public `*.streamlit.app` URL. Students need only a browser, not GitHub, Python, Codespaces or terminal commands.
