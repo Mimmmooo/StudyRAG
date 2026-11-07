@@ -137,7 +137,7 @@ def main() -> None:
     )
     _chat_styles()
     st.title("📚 StudyRAG")
-    st.caption("Upload your notes and ask questions in Bangla or English.")
+    st.caption("Upload your notes and ask questions in Bangla or English. AI answers may contain mistakes, especially with scanned PDFs.")
     session = _session()
     provider, key, top_k = _sidebar(session)
 
