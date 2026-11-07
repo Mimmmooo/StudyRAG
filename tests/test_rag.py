@@ -174,5 +174,25 @@ def test_bengali_author_completion_not_blocked_by_ocr_mismatch() -> None:
         "কাকতাড়ুয়া সত্যজিৎ রায় ১৭",
     )
     result = rag.ask("কাকতাড়ুয়া গল্পের লেখক কে?")
-    assert result.answer == "কাকতাড়ুয়া সত্যজিৎ রায়"
+    assert result.answer == "কাকতাড়ুয়া গল্পের লেখক সত্যজিৎ রায়।"
     assert result.citations
+
+
+def test_bengali_author_answer_is_a_complete_sentence() -> None:
+    """Format the model's terse answer without changing the name."""
+    rag, _, _, _ = _pipeline(
+        [_match("কাকতাড়ুয়া সত্যজিৎ রায়", 0.1)],
+        "কাকতাড়ুয়া সত্যজিৎ রায়",
+    )
+    assert rag.ask("কাকতাড়ুয়া গল্পের লেখক কে?").answer == (
+        "কাকতাড়ুয়া গল্পের লেখক সত্যজিৎ রায়।"
+    )
+
+
+def test_unrelated_bengali_answer_is_not_rewritten() -> None:
+    """Formatting should not interfere with normal reasoning responses."""
+    rag, _, _, _ = _pipeline(
+        [_match("বাংলা গল্পের বর্ণনা", 0.1)],
+        "গল্পের ঘটনাটি গ্রামে ঘটে।",
+    )
+    assert rag.ask("গল্পের ঘটনাটি কোথায় ঘটে?").answer == "গল্পের ঘটনাটি গ্রামে ঘটে।"
