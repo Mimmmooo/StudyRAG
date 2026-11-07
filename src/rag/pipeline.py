@@ -196,6 +196,11 @@ class RAGPipeline:
         if is_author_question(question):
             # Remove an isolated trailing number that local models sometimes
             # append without context (e.g. "সত্যজিৎ রায় ১৭").
+            answer = re.sub(
+                r"\s+[০-৯0-9]+\s+পৃষ্ঠা(?:য়|য়|তে)?\s+ছিলেন(?=\s*(?:\[\d+\])?$)",
+                "",
+                answer,
+            )
             answer = re.sub(r"\s+[০-৯0-9]+\s*$", "", answer).strip()
         # Citations are optional in the simplified chat experience.
         # Keep the retrieved evidence internally for diagnostics, but never
