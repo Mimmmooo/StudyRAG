@@ -19,10 +19,39 @@ def _session() -> StudySession:
 
 
 def _render_sources(sources: tuple[Citation, ...]) -> None:
-    """Show matching passage text together with numbered file/page labels."""
+    """Show compact, clickable file/page references beneath the answer."""
+    if not sources:
+        return
+    st.caption("Sources")
+    columns = st.columns(min(len(sources), 3), gap="small")
     for index, source in enumerate(sources, start=1):
-        with st.expander(f"[{index}] {source.source} · page {source.page}"):
-            st.text(source.text)
+        with columns[(index - 1) % len(columns)]:
+            with st.popover(f"📄 [{index}] Page {source.page}", use_container_width=True):
+                st.caption(source.source)
+                st.markdown(f"**PDF page {source.page}**")
+                st.text(source.text)
+
+
+def _chat_styles() -> None:
+    """Use a roomy, readable study-chat layout."""
+    st.markdown(
+        """
+        <style>
+          .block-container {max-width: 960px; padding-top: 2.2rem;}
+          [data-testid="stChatMessage"] {
+            border-radius: 16px;
+            padding: 1rem 1.2rem;
+            margin-bottom: .65rem;
+          }
+          [data-testid="stChatMessage"] p {
+            line-height: 1.75;
+            font-size: 1.02rem;
+          }
+          [data-testid="stChatInput"] {border-radius: 18px;}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 @st.cache_data(ttl=60, show_spinner=False)
@@ -161,10 +190,11 @@ def main() -> None:
     st.set_page_config(
         page_title="StudyRAG · Chat with notes",
         page_icon="📚",
-        layout="centered",
+        layout="wide",
     )
+    _chat_styles()
     st.title("📚 StudyRAG")
-    st.caption("Chat with your notes and inspect file/page citations.")
+    st.caption("Ask a question. Every source chip opens the exact retrieved PDF passage.")
     session = _session()
     provider, key, top_k = _sidebar(session)
 
