@@ -213,3 +213,9 @@ Pull requests and bug reports are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.m
 ### Scanned Bengali PDFs
 
 StudyRAG now uses PyMuPDF to read selectable text and automatically falls back to free Bengali/English Tesseract OCR for image-only pages. On Streamlit Cloud, `packages.txt` installs the language data. OCR quality depends on scan resolution and contrast. Large PDFs can be slow; 200 MB is the upload ceiling, not a guaranteed indexing capacity. The provided 66-page Bengali textbook has zero embedded text, and one representative page was verified with Bengali OCR before adding this implementation. Full-book hosted indexing still requires a live smoke test.
+
+### Bengali question retrieval and Ollama hosting boundary
+
+The default CPU ONNX embedding model is now multilingual (`sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`) and Bengali keyword/title matches are ranked alongside vector results. Existing browser sessions need their notes re-indexed after the change. Exact-term OCR matching is best-effort and will not fix incorrectly recognized letters.
+
+**Ollama is API-key-free only when you run the model on a computer/server that has adequate RAM and stays online.** GitHub repositories and Actions do not provide a persistent inference backend. Streamlit Community Cloud has memory limits and cannot reliably run the existing 3B Ollama model in addition to OCR and vector search. Installing the binary alone does not provide a stable public model server. Streamlit's hosted public app needs either a separately operated Ollama server (with secure private access and authentication) or an owner-configured cloud provider API key. Keys are server-side secrets, never required of students. No paid service is necessary to run StudyRAG locally with Ollama, but a free public 24/7 Ollama deployment cannot be promised with the currently available hosting.
