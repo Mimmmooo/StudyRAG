@@ -1,16 +1,16 @@
 # 📚 StudyRAG
 
-**Free, open-source, local-first RAG study assistant.** Upload PDF/TXT/Markdown notes and ask questions with file and page citations. The default AI uses **Ollama on your computer**, with **no API key** and no cloud hosting. Optional Gemini/Groq BYOK integrations remain available.
+**Free, open-source, local-first RAG study assistant.** Upload PDF/TXT/Markdown notes and receive AI-written answers from your documents. The default AI uses **Ollama on your computer**, with **no API key** and no cloud hosting. Optional Gemini/Groq BYOK integrations remain available.
 
 ![StudyRAG interface preview](docs/assets/studyrag-ui-preview.svg)
 
 ## What works
 
 - PDF/TXT/MD upload (200 MiB per file; practical limit depends on your computer).
-- Bengali and English **scanned PDF OCR** using Tesseract, plus selectable-text PDF support.
-- Multilingual ONNX embeddings via FastEmbed and a persistent per-session ChromaDB index.
-- Bengali keyword/title retrieval alongside vector similarity; named-source and page citations.
-- Local Ollama-generated answers, follow-up questions, and source references.
+- Bengali and English **scanned PDF OCR** using Tesseract, with a local OCR cache to speed repeat indexing.
+- Multilingual ONNX embeddings via FastEmbed and a temporary ChromaDB index per session.
+- Bengali keyword/title retrieval alongside vector similarity, without citation markers in chat.
+- Local Ollama-generated answers and follow-up questions with a simple chat interface.
 - Optional Gemini/Groq providers, keyless source-excerpt mode, and session reset.
 - Python 3.11/3.12, Streamlit, pytest, Ruff and CI on Ubuntu, macOS and Windows.
 
@@ -31,7 +31,7 @@ The first run automatically checks/sets up:
 2. Python **3.11 or 3.12**; if Ubuntu defaults to Python 3.14, it downloads its own managed Python 3.12 using uv instead of modifying system Python.
 3. A project-specific `.venv`. This is intentionally **not a global pip install**, to avoid breaking other Python projects. It persists across launches.
 4. Python packages *only* when `requirements.txt` changes or a required package is missing.
-5. The official Ollama app and `qwen2.5:3b` model *only* when missing. Ollama models stay in Ollama's normal model cache. The Ollama server starts automatically if needed.
+5. The official Ollama app and **`qwen2.5:3b`** (recommended for 8 GB RAM) *only* when missing. Ollama models stay in Ollama's normal model cache. The Ollama server starts automatically if needed.
 
 **Requirements:** internet for the initial downloads; available disk space for OCR, Python packages and a ~2 GB LLM model; adequate RAM. GPU is optional, CPU inference may be slower. No paid service is required.
 
@@ -66,9 +66,9 @@ The Windows launcher checks for Python, packages, Ollama, and Bengali/English OC
 2. The sidebar should default to **Ollama (local AI)**.
 3. Upload a scanned Bengali PDF, including a textbook such as `Secondary (BV)-2026_Class 8_Anondopath_compressed.pdf`, then click **Index selected files**.
 4. Check the indexed chunk count, then ask **কাকতাড়ুয়া গল্পের লেখক কে?**
-5. The expected author is **সত্যজিৎ রায়**, with source near PDF page **6**. OCR errors can affect quality, and the generated answer should always be checked against cited source text.
+5. The expected author is **সত্যজিৎ রায়**. Check generated answers against your original book, especially when OCR quality is poor.
 
-The 36.9 MB Bengali scanned book was previously indexed successfully on the hosted prototype (167 chunks). This demonstrates one real-book success, **not** a guarantee that all 200 MB PDFs will index or that every OCR word will be correct. The current local bootstrap still requires a first-run smoke test on each OS.
+The 36.9 MB Bengali scanned book has been indexed successfully (167 chunks). This demonstrates one real-book success, **not** a guarantee that all 200 MB PDFs will index or that every OCR word will be correct. The current local bootstrap still requires a first-run smoke test on each OS.
 
 ## How the components work
 
@@ -84,10 +84,14 @@ Question -> vector + Bengali keyword retrieval ------+
                          v
               Local Ollama (default)
                          v
-          Answer + filename / page citations
+          AI-written answer (no citation markers)
 ```
 
 The Streamlit UI (`app.py`) contains no ingestion or RAG business logic. The modules are separated under `src/ingestion`, `src/embeddings`, `src/vectorstore`, `src/llm`, and `src/rag`.
+
+## Why Qwen2.5 3B?
+
+Qwen3 4B repeatedly timed out or produced analysis instead of final Bengali answers on an 8 GB Ubuntu machine. The default `qwen2.5:3b` is a smaller non-thinking baseline; it is more practical for local CPU use, although Bengali answer accuracy is not guaranteed. Avoid forcing `OLLAMA_MODEL=qwen3:4b` unless you deliberately want to compare models. OCR uses one CPU thread per Tesseract invocation and a modest DPI reduction; first-time processing still depends on page count and hardware. Repeat uploads reuse locally cached OCR results when the file has not changed.
 
 ## Other answer providers
 
@@ -109,12 +113,12 @@ On Windows use `.venv\Scripts\python.exe` instead. Ruff/pytest are developer too
 
 ## Notes and limitations
 
-- Scanned OCR is best-effort and can misread characters, names, punctuation or columns. Compare answers with the page citation.
+- Scanned OCR is best-effort and can misread characters, names, punctuation or columns. The app no longer displays citation markers or verifies each factual claim: check important answers against the original PDF.
 - 200 MiB is the upload ceiling, not a universal indexing performance guarantee. Processing speed depends on scan DPI, page count, RAM and CPU.
 - The local Streamlit server binds to `127.0.0.1`; it is **not** a public website. Data stays on your computer when using local Ollama.
 - PDF page numbers refer to physical pages of the uploaded PDF, which can differ from printed page numbers.
-- Index data is temporary for the browser session; original upload bytes are removed after indexing. CLI ingestion uses the local `.chroma/` folder.
-- A few GitHub CI tests and a manual local Ollama smoke test are required before this branch should be merged. Do not claim production-grade verification from an offline test alone.
+- Index data is temporary for the browser session; original upload bytes are removed after indexing. OCR results are cached in `~/.cache/studyrag/ocr/` (or `STUDYRAG_OCR_CACHE_DIR`) to speed repeated uploads. Remove that folder if you want to erase cached extracted text. CLI ingestion uses the local `.chroma/` folder.
+- Automated CI and a manual local PDF/Ollama smoke test should pass before this branch is merged. Do not claim production-grade verification from an offline test alone.
 
 ## Project
 
