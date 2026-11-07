@@ -15,7 +15,7 @@ StudyRAG runs on your computer. Upload text-based PDFs, TXT or Markdown files; i
 ## Features
 
 - 📄 Upload multiple PDF, TXT and Markdown notes (15 MB per file)
-- 🧠 Local sentence-transformer embeddings and ChromaDB retrieval
+- 🧠 CPU-friendly ONNX FastEmbed embeddings and ChromaDB retrieval
 - 💬 Follow-up-aware chat with recent conversational context
 - 🔖 Expandable citations with original filename, page number and passage text
 - 🎛️ Adjustable number of retrieved passages, 1–5
@@ -130,7 +130,7 @@ Use `py -3.11` instead if Python 3.11 is installed. This method does not require
 ## How it works
 
 ```text
-Upload files → Extract pages → Split into chunks → Local embeddings → ChromaDB
+Upload files → Extract pages → Split into chunks → ONNX embeddings → ChromaDB
                                                                ↓
 Question + recent turns → Embed query → Retrieve matching passages
                                                ↓
