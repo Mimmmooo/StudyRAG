@@ -112,7 +112,7 @@ class RAGPipeline:
         self.last_model_response = answer
         if not answer or NOT_FOUND.lower() in answer.lower():
             return RAGAnswer(NOT_FOUND, ())
-        markers = {int(number) for number in re.findall(r"\\[(\\d+)\\]", answer)}
+        markers = {int(number) for number in re.findall(r"\[(\d+)\]", answer)}
         if not markers or not markers.issubset(set(range(1, len(citations) + 1))):
             return RAGAnswer(NOT_FOUND, ())
         return RAGAnswer(answer, citations)
