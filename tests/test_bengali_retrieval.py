@@ -57,7 +57,7 @@ def test_title_author_answer_bypasses_unreliable_model(tmp_path: Path) -> None:
     result = RAGPipeline(embedder, store, model, top_k=1, max_distance=2.0).ask(
         "কাকতাড়ুয়া গল্পের লেখক কে?"
     )
-    assert result.answer == "লেখক: সত্যজিৎ রায়"
+    assert result.answer == "কাকতাড়ুয়া গল্পের লেখক সত্যজিৎ রায়।"
     assert result.citations[0].page == 5
     model.generate.assert_not_called()
 
