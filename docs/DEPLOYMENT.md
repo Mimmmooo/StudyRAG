@@ -10,7 +10,7 @@ StudyRAG is free and open source. There are two supported *paths to try*: runnin
 - Free disk space for Python packages, the embedding model and optional Ollama model
 - Ollama installed locally, or a user-owned Gemini/Groq free-tier API key
 
-On macOS or Linux:
+On macOS or Linux (Ubuntu/Debian):
 
 ```bash
 git clone https://github.com/Mimmmooo/StudyRAG.git
@@ -53,6 +53,22 @@ python -m pytest -q
 python -m streamlit run app.py
 ```
 
+### Windows local setup (PowerShell)
+
+Install Git and Python 3.11 or 3.12, then use the following without activating PowerShell scripts:
+
+```powershell
+git clone https://github.com/Mimmmooo/StudyRAG.git
+cd StudyRAG
+py -3.12 -m venv .venv
+.\\.venv\\Scripts\\python.exe -m pip install -r requirements-dev.txt
+.\\.venv\\Scripts\\python.exe -m ruff check .
+.\\.venv\\Scripts\\python.exe -m pytest -q
+.\\.venv\\Scripts\\python.exe -m streamlit run app.py
+```
+
+If you have Python 3.11, change the first `py -3.12` command to `py -3.11`. Install Ollama for Windows for fully local inference, or select Gemini/Groq with your own free-tier key.
+
 ## Option B: Streamlit Community Cloud (experimental)
 
 Streamlit Community Cloud offers a free GitHub-connected hosting path: https://share.streamlit.io/. **StudyRAG has not been deployed or load-tested there yet.** Its dependencies include PyTorch, sentence-transformers and ChromaDB, so cold starts, dependency installation and RAM usage may exceed free-tier allowances. Do not consider the deployment complete until upload, embeddings, retrieval and model answers all work on the hosted URL.
@@ -74,7 +90,7 @@ Streamlit Community Cloud offers a free GitHub-connected hosting path: https://s
 - The current 15 MB limit is per file in application validation; Streamlit's own uploader may allow selecting larger files before the app rejects them.
 - Requests to Gemini/Groq transmit selected note passages and prompts to third-party providers. Their retention policies, quotas and rates are outside StudyRAG's control.
 - The free cloud may sleep or restart, and model download/build time may be substantial. Local hosting remains the reliable no-cost path.
-- In-memory session chat history is display-only; it is not sent as conversational history to the language model.
+- Up to six recent conversation turns are sent as reference context for follow-up questions. For Gemini/Groq, this text is transmitted to the external provider alongside retrieved passages.
 
 ### Diagnosing a deployment
 
