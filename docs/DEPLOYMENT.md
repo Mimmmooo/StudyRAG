@@ -126,3 +126,7 @@ Streamlit Community Cloud offers a free GitHub-connected hosting path: https://s
 - Dependencies: https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/app-dependencies
 - Resource limits: https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app
 - Secrets: https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/secrets-management
+
+### Scanned PDF OCR
+
+PyMuPDF reads native PDF text; pages with no text are rasterized individually and passed to Tesseract with Bengali and English trained data. Streamlit Cloud installs the binary and both languages using `packages.txt`. OCR can take time and might misread low-quality printed text. Confirm source-page citations on the actual hosted app. The current free hosting tier does not guarantee successful indexing at the 200 MB ceiling.
