@@ -25,11 +25,13 @@ def _render_sources(sources: tuple[Citation, ...]) -> None:
     st.caption("Sources")
     columns = st.columns(min(len(sources), 3), gap="small")
     for index, source in enumerate(sources, start=1):
-        with columns[(index - 1) % len(columns)]:
-            with st.popover(f"📄 [{index}] Page {source.page}", use_container_width=True):
-                st.caption(source.source)
-                st.markdown(f"**PDF page {source.page}**")
-                st.text(source.text)
+        with (
+            columns[(index - 1) % len(columns)],
+            st.popover(f"📄 [{index}] Page {source.page}", use_container_width=True),
+        ):
+            st.caption(source.source)
+            st.markdown(f"**PDF page {source.page}**")
+            st.text(source.text)
 
 
 def _chat_styles() -> None:
