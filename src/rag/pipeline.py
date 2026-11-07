@@ -7,6 +7,7 @@ from src.llm.base import BaseLLMProvider
 from src.llm.extractive_provider import ExtractiveProvider
 from src.rag.evidence import (
     explicit_author_from_passage,
+    format_bengali_author_answer,
     is_author_question,
 )
 from src.rag.models import Citation, RAGAnswer
@@ -166,7 +167,7 @@ class RAGPipeline:
             distinct = {name for name, _ in found}
             if len(distinct) == 1:
                 name, source = found[0]
-                return RAGAnswer(f"লেখক: {name}", (source,))
+                return RAGAnswer(f"{question.split(' গল্প')[0]} গল্পের লেখক {name}।" if " গল্প" in question else f"লেখক: {name}", (source,))
         conversation = "\n".join(
             f"{role}: {text}" for role, text in recent
         )
@@ -202,6 +203,7 @@ class RAGPipeline:
                 answer,
             )
             answer = re.sub(r"\s+[০-৯0-9]+\s*$", "", answer).strip()
+        answer = format_bengali_author_answer(question, answer)
         # Citations are optional in the simplified chat experience.
         # Keep the retrieved evidence internally for diagnostics, but never
         # reject a useful answer only because a small local model omitted [1].
