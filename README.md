@@ -209,3 +209,7 @@ Cloud deployment is intentionally not part of this project's current goal. If yo
 ## Contribute and license
 
 Pull requests and bug reports are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) and remove any secrets/private text from logs. The project is licensed under [MIT](LICENSE); you can use, modify, and redistribute it under that license.
+
+### Scanned Bengali PDFs
+
+StudyRAG now uses PyMuPDF to read selectable text and automatically falls back to free Bengali/English Tesseract OCR for image-only pages. On Streamlit Cloud, `packages.txt` installs the language data. OCR quality depends on scan resolution and contrast. Large PDFs can be slow; 200 MB is the upload ceiling, not a guaranteed indexing capacity. The provided 66-page Bengali textbook has zero embedded text, and one representative page was verified with Bengali OCR before adding this implementation. Full-book hosted indexing still requires a live smoke test.
