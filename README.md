@@ -14,7 +14,7 @@ StudyRAG runs on your computer. Upload text-based PDFs, TXT or Markdown files; i
 
 ## Features
 
-- 📄 Upload multiple PDF, TXT and Markdown notes (15 MB per file)
+- 📄 Upload multiple PDF, TXT and Markdown notes (200 MB per file)
 - 🧠 CPU-friendly ONNX FastEmbed embeddings and ChromaDB retrieval
 - 💬 Follow-up-aware chat with recent conversational context
 - 🔖 Expandable citations with original filename, page number and passage text
@@ -169,6 +169,9 @@ python -m scripts.rag_smoke
 The default smoke script uses a demo provider and does not generate a factual answer. `python -m scripts.rag_smoke --provider ollama` tests a live Ollama model. GitHub Actions checks Ruff and offline pytest on Python 3.11 and 3.12.
 
 ## Limitations and privacy
+
+- The 200 MB per-file upload ceiling does not guarantee successful indexing. Large PDFs may exceed free-hosting RAM or processing time, especially with concurrent users.
+
 
 - Scanned/image-only PDFs need OCR, which is not yet included.
 - TXT and MD files use page 1 as a citation placeholder.
