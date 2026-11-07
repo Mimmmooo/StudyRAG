@@ -101,7 +101,7 @@ Streamlit Community Cloud offers a free GitHub-connected hosting path: https://s
 - Uploading notes to a hosted app sends their contents to that hosting service. Do not use personal, confidential, copyrighted-with-restrictions or institution-protected notes without checking permissions and privacy needs.
 - Each browser session uses a temporary local ChromaDB index on the server. Originals are removed after indexing; vectors and extracted passages persist while that session is alive, and local temporary storage is not durable across restarts. This is **not a formal guarantee of immediate secure deletion**.
 - Sessions are isolated in the application state but this project has no authentication, persistent user accounts, quotas, malware scanning or audited multi-tenant security. **Do not represent it as production-ready for arbitrary public uploads.**
-- The current 15 MB limit is per file in application validation; Streamlit's own uploader may allow selecting larger files before the app rejects them.
+- Application validation and Streamlit uploader are both set to 200 MB per file. This is only an upload ceiling: indexing large PDFs may exceed free hosting memory or time limits, especially with several simultaneous users.
 - Requests to Gemini/Groq transmit selected note passages and prompts to third-party providers. Their retention policies, quotas and rates are outside StudyRAG's control.
 - The free cloud may sleep or restart, and model download/build time may be substantial. Local hosting remains the reliable no-cost path.
 - Up to six recent conversation turns are sent as reference context for follow-up questions. For Gemini/Groq, this text is transmitted to the external provider alongside retrieved passages.
