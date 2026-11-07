@@ -28,7 +28,7 @@ def test_image_only_pdf_reports_missing_text(tmp_path: Path) -> None:
     writer.add_blank_page(width=200, height=200)
     with pdf_path.open("wb") as output:
         writer.write(output)
-    with pytest.raises(ValueError, match="Scanned PDFs need OCR"):
+    with pytest.raises(ValueError, match="No extractable text"):
         load_document(pdf_path)
 
 
