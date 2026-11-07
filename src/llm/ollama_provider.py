@@ -23,7 +23,7 @@ class OllamaProvider(BaseLLMProvider):
                 {
                     "model": self.model,
                     "prompt": (
-                        (" /no_think\n" if self.model.startswith("qwen3") else "")
+                        ("/no_think\n" if self.model.startswith("qwen3") else "")
                         + "Answer the question directly in its language. Do not write analysis.\n"
                         + prompt
                     ),
