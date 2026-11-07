@@ -25,16 +25,18 @@ def _sidebar(session: StudySession) -> tuple[str, str | None, int]:
     """Configure model, retrieval, uploads and a fresh chat."""
     with st.sidebar:
         st.header("Study settings")
-        provider = st.selectbox("LLM provider", ["ollama", "gemini", "groq"])
+        provider = st.selectbox("LLM provider", ["extractive", "ollama", "gemini", "groq"])
         key = None
-        if provider != "ollama":
+        if provider in {"gemini", "groq"}:
             key = st.text_input(
                 f"{provider.title()} API key",
                 type="password",
                 help="Not saved to files or version control.",
             )
-        else:
+        elif provider == "ollama":
             st.caption("Local Ollama requires qwen2.5:3b.")
+        else:
+            st.caption("No API key needed. Shows matching note passages, not an AI-written answer.")
         top_k = st.slider(
             "Passages to retrieve",
             min_value=1,
