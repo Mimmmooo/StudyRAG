@@ -87,3 +87,25 @@ def explicit_author_from_passage(question: str, passage: str) -> str | None:
             ):
                 candidates.add(following)
     return next(iter(candidates)) if len(candidates) == 1 else None
+
+
+def format_bengali_author_answer(question: str, answer: str) -> str:
+    """Turn a terse title/name response into a complete Bengali sentence."""
+    if not is_author_question(question):
+        return answer
+    match = re.search(
+        r"([\u0980-\u09ff]{3,})\s+(?:গল্প|কবিতা|প্রবন্ধ|রচনা)(?:টির|ের)?",
+        question,
+    )
+    if not match:
+        return answer
+    title = match.group(1)
+    # Only rewrite a simple 'title + 1-3-word person name' answer.
+    # Leave full explanations and uncertain responses unchanged.
+    plain = re.sub(r"\s*\[\d+\]\s*$", "", answer).strip().rstrip("।.")
+    pattern = rf"^{re.escape(title)}\s+([\u0980-\u09ff]+(?:\s+[\u0980-\u09ff]+){{0,2}})$"
+    short = re.fullmatch(pattern, plain)
+    if not short:
+        return answer
+    kind = "গল্প" if "গল্প" in question else "কবিতা" if "কবিতা" in question else "রচনা"
+    return f"{title} {kind}ের লেখক {short.group(1)}।"
