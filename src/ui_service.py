@@ -99,6 +99,7 @@ class StudySession:
                 if isinstance(item.get("distance"), (int, float))
             ],
             "model_answer": pipeline.last_model_response,
+            "failure_reason": pipeline.last_failure_reason,
             "threshold": pipeline.max_distance,
         }
         return result
