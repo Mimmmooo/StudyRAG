@@ -82,7 +82,7 @@ class StudySession:
             provider, api_key=api_key, settings=self.settings
         )
         pipeline = RAGPipeline(
-            self.embedder, self.store, llm, top_k=top_k, max_distance=2.0
+            self.embedder, self.store, llm, top_k=top_k, max_distance=self.settings.max_distance
         )
         self.last_debug = {}
         result = pipeline.ask(question, history=history)
