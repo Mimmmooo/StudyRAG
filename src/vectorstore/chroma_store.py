@@ -38,6 +38,12 @@ class ChromaStore:
         )
         return len(chunks)
 
+    def delete_source(self, source: str) -> None:
+        """Remove all indexed chunks for a document before replacing it."""
+        matches = self.collection.get(where={"source": source}, include=[])
+        if matches["ids"]:
+            self.collection.delete(ids=matches["ids"])
+
     def search(self, query_vector: list[float], limit: int = 3) -> list[dict]:
         """Return matching chunks and their citation metadata."""
         if limit < 1:
