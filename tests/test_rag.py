@@ -86,7 +86,7 @@ def test_multiple_citations_keep_pages() -> None:
     rag, _, _, _ = _pipeline(
         [_match("First"), {**_match("Second"), "page": 5}]
     )
-    assert [citation.page for citation in rag.ask("Question?").citations] == [4, 5]
+    assert [citation.page for citation in rag.ask("Question?").citations] == [4]
 
 
 def test_debug_capture_for_matching_passage() -> None:
@@ -104,3 +104,42 @@ def test_debug_capture_without_passages() -> None:
     assert rag.ask("Unknown?").answer == NOT_FOUND
     assert rag.last_matches == []
     assert rag.last_model_response is None
+
+
+def test_citations_include_only_passages_referenced_by_model() -> None:
+    """Model citing second hit must not display unrelated first or third hits."""
+    rag, _, _, _ = _pipeline(
+        [_match("first"), {**_match("second"), "page": 5},
+         {**_match("third"), "page": 7}],
+        "Relevant fact [2]",
+    )
+    result = rag.ask("What?")
+    assert result.answer == "Relevant fact [1]"
+    assert [item.page for item in result.citations] == [5]
+
+
+def test_author_name_must_appear_in_cited_evidence() -> None:
+    """Reject fluent but unsupported author attributions."""
+    rag, _, _, _ = _pipeline(
+        [_match("কাকতাড়ুয়া\\nসত্যজিৎ রায়\\nগল্পের শুরু", 0.1)],
+        "কাকতাড়ুয়া গল্পের লেখক রবীন্দ্রনাথ ঠাকুর [1]",
+    )
+    assert not rag.ask("কাকতাড়ুয়া গল্পের লেখক কে?").citations
+
+
+def test_author_attribution_accepts_matching_source() -> None:
+    """Source-backed Bengali author answer retains its citation."""
+    rag, _, _, _ = _pipeline(
+        [_match("কাকতাড়ুয়া\\nসত্যজিৎ রায়\\nগল্পের শুরু", 0.1)],
+        "কাকতাড়ুয়া গল্পের লেখক সত্যজিৎ রায় [1]",
+    )
+    assert rag.ask("কাকতাড়ুয়া গল্পের লেখক কে?").citations[0].page == 4
+
+
+def test_author_answer_rejects_invented_page_number() -> None:
+    """A model must not invent a page number outside its cited excerpt."""
+    rag, _, _, _ = _pipeline(
+        [_match("কাকতাড়ুয়া\\nসত্যজিৎ রায়", 0.1)],
+        "কাকতাড়ুয়া গল্পের লেখক সত্যজিৎ রায় ১৭ পৃষ্ঠায় ছিলেন [1]",
+    )
+    assert not rag.ask("কাকতাড়ুয়া গল্পের লেখক কে?").citations
