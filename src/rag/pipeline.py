@@ -104,7 +104,7 @@ class RAGPipeline:
             offset = len(sources)
             answer = re.sub(
                 r"\[(\d+)\]",
-                lambda marker: f"[{offset + int(marker.group(1))}]",
+                lambda marker, base=offset: f"[{base + int(marker.group(1))}]",
                 answer,
             )
             sources.extend(result.citations)
