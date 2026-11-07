@@ -8,7 +8,7 @@ import streamlit as st
 from src.llm.base import LLMError
 from src.provider_selection import select_default_provider
 from src.rag.models import Citation
-from src.ui_service import StudySession
+from src.ui_service import MAX_UPLOAD_MB, StudySession
 
 
 def _session() -> StudySession:
@@ -51,6 +51,7 @@ def _sidebar(session: StudySession) -> tuple[str, str | None, int]:
     """Configure model, retrieval, uploads and a fresh chat."""
     with st.sidebar:
         st.header("Study settings")
+        st.caption(f"Upload limit: {MAX_UPLOAD_MB} MB per file · OCR-enabled build")
         server_keys = {
             "groq": _hosted_key("GROQ_API_KEY"),
             "gemini": _hosted_key("GEMINI_API_KEY"),
@@ -105,7 +106,7 @@ def _sidebar(session: StudySession) -> tuple[str, str | None, int]:
             "Upload your notes",
             type=["pdf", "txt", "md"],
             accept_multiple_files=True,
-            help="Text PDFs, TXT and MD. Maximum 200 MB per file. Large PDFs may exceed free hosting memory.",
+            help=f"PDF, TXT and MD. Maximum {MAX_UPLOAD_MB} MB per file. Large PDFs may exceed free hosting memory.",
         )
         if uploads:
             st.caption(
