@@ -4,7 +4,7 @@
 
 StudyRAG runs on your computer. Upload text-based PDFs, TXT or Markdown files; it finds relevant passages and asks a language model to answer using your notes. Follow-up questions can refer to earlier turns. Source excerpts remain visible under each answer.
 
-**Status:** Open-source portfolio project. No cloud deployment is required. The GitHub repository is public and MIT licensed.
+**Status:** Open-source portfolio project. Runs locally or as a temporary GitHub Codespaces preview; no permanent cloud deployment is required. The GitHub repository is public and MIT licensed.
 
 ## Interface preview
 
@@ -22,6 +22,19 @@ StudyRAG runs on your computer. Upload text-based PDFs, TXT or Markdown files; i
 - 🔌 Free local Ollama; optional Gemini/Groq free-tier API keys (BYOK)
 - 🔒 Temporary per-browser-session index; clear notes and chat when finished
 - ✅ Ruff, pytest, GitHub Actions on Ubuntu, macOS and Windows with Python 3.11 and 3.12
+
+## Run in GitHub cloud (no local installation)
+
+**Recommended for Ubuntu, Windows, and macOS users who don't want to install Python, packages, Ollama, or Git locally.**
+
+1. Sign in to GitHub, visit the [Codespaces creation page for this contribution branch](https://github.com/codespaces/new?hide_repo_select=true&ref=fix%2Fcross-platform-reliability&repo=1448049876), and choose **Create codespace** (prefer the smallest machine).
+2. The `.devcontainer/devcontainer.json` configuration installs the Python dependencies **inside GitHub Codespaces** and starts Streamlit on port **8501**. Open the forwarded **StudyRAG Streamlit** port in your browser.
+3. Upload notes, select **gemini** or **groq**, and enter **your own free-tier API key** in the password input. These providers receive retrieved passages and recent conversation context. No local installation is required.
+4. Stop or delete your Codespace after use to preserve your monthly free quota.
+
+**Important limitations:** Codespaces is a GitHub-hosted *temporary development environment*, not a public always-on app. It needs a GitHub login, an internet connection, and available Codespaces quota; creating a Codespace requires a browser confirmation. It may stop when idle. Ollama is **not preinstalled or running** in Codespaces; use Gemini/Groq BYOK for this path. Avoid uploading sensitive notes to a third-party host. Codespaces has usage-based billing beyond included free quotas, so do not enable paid overages if you want to stay free.
+
+The app and indexing work in GitHub's Codespace; **GitHub Actions only runs tests**, not a persistent app backend. For a shareable permanent URL, a separate free hosting service would be needed and must be validated against memory limits.
 
 ## Run StudyRAG locally
 
