@@ -44,3 +44,18 @@ def test_blank_scan_without_text_fails_clearly(tmp_path: Path) -> None:
             assert "No extractable text" in str(exc)
         else:
             raise AssertionError("Expected a clear error for a blank PDF")
+
+
+def test_reupload_uses_cached_ocr_without_reprocessing(tmp_path: Path, monkeypatch) -> None:
+    """The same scanned PDF should be OCR'd once across separate sessions."""
+    monkeypatch.setenv("STUDYRAG_OCR_CACHE_DIR", str(tmp_path / "ocr-cache"))
+    pdf = tmp_path / "book.pdf"
+    writer = PdfWriter()
+    writer.add_blank_page(width=400, height=600)
+    with pdf.open("wb") as stream:
+        writer.write(stream)
+    with patch("src.ingestion.loaders._ocr_page", return_value="বাংলা বইয়ের লেখা") as ocr:
+        first = load_document(pdf)
+        second = load_document(pdf)
+    assert first == second
+    assert ocr.call_count == 1
