@@ -59,7 +59,8 @@ def _sidebar(session: StudySession) -> tuple[str, str | None, int]:
         st.caption(f"Upload limit: {MAX_UPLOAD_MB} MB per file · OCR-enabled build")
         provider = "ollama"
         key = None
-        st.caption("AI: Ollama · qwen2.5:3b recommended for 8 GB RAM")
+        model = os.getenv("OLLAMA_MODEL", "qwen2.5:3b")
+        st.caption(f"Local AI: Ollama ({model})")
         if not _ollama_online():
             st.warning("Start Ollama using the StudyRAG launcher before asking questions.")
         top_k = st.slider(
