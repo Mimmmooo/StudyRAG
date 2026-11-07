@@ -34,13 +34,13 @@ def test_no_keyword_overlap_does_not_invent_sources(tmp_path: Path) -> None:
 
 def test_explicit_title_author_from_ocr_heading() -> None:
     """A short standalone author line immediately after the title is evidence."""
-    text = "কাকতাড়ুয়া\\nসত্যজিৎ রায়\\nএকদিন মাঠের পাশে একটি ছেলে দাঁড়িয়েছিল।"
+    text = "কাকতাড়ুয়া\nসত্যজিৎ রায়\nএকদিন মাঠের পাশে একটি ছেলে দাঁড়িয়েছিল।"
     assert explicit_author_from_passage("কাকতাড়ুয়া গল্পের লেখক কে?", text) == "সত্যজিৎ রায়"
 
 
 def test_author_is_not_guessed_from_story_character() -> None:
     """A character mentioned in story prose is not proof of authorship."""
-    text = "কাকতাড়ুয়া\\nএকদিন মাঠে হাঁটছিল রবীন্দ্রনাথ ঠাকুর।\\nগল্পের শুরু।"
+    text = "কাকতাড়ুয়া\nএকদিন মাঠে হাঁটছিল রবীন্দ্রনাথ ঠাকুর।\nগল্পের শুরু।"
     assert explicit_author_from_passage("কাকতাড়ুয়া গল্পের লেখক কে?", text) is None
 
 
@@ -48,7 +48,7 @@ def test_title_author_answer_bypasses_unreliable_model(tmp_path: Path) -> None:
     """Explicit author evidence should not require Qwen3 to format a citation."""
     store = ChromaStore(tmp_path / "explicit-author")
     store.add_chunks(
-        [TextChunk("কাকতাড়ুয়া\\nসত্যজিৎ রায়\\nগল্পের শুরু।", "বই.pdf", 5, 0)],
+        [TextChunk("কাকতাড়ুয়া\nসত্যজিৎ রায়\nগল্পের শুরু।", "বই.pdf", 5, 0)],
         [[1.0, 0.0]],
     )
     embedder = Mock()
@@ -64,5 +64,5 @@ def test_title_author_answer_bypasses_unreliable_model(tmp_path: Path) -> None:
 
 def test_unlabeled_author_in_unrelated_paragraph_is_not_extracted() -> None:
     """Do not assign names merely because they appear near a story word."""
-    text = "কাকতাড়ুয়া গল্পটি শুরু হয়।\\nএকদিন সত্যজিৎ রায় মাঠে যান।"
+    text = "কাকতাড়ুয়া গল্পটি শুরু হয়।\nএকদিন সত্যজিৎ রায় মাঠে যান।"
     assert explicit_author_from_passage("কাকতাড়ুয়া গল্পের লেখক কে?", text) is None
