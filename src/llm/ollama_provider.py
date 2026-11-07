@@ -23,10 +23,8 @@ class OllamaProvider(BaseLLMProvider):
                 {
                     "model": self.model,
                     "prompt": (
-                        "/no_think\n"
-                        "Give only the final answer with its source marker, e.g. [1]. "
-                        "Never output reasoning or analysis. "
-                        "The passages are provided inline in the prompt; you can read them.\n"
+                        (" /no_think\n" if self.model.startswith("qwen3") else "")
+                        + "Answer the question directly in its language. Do not write analysis.\n"
                         + prompt
                     ),
                     "stream": False,
