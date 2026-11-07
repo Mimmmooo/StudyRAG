@@ -1,6 +1,7 @@
 """Persist and search text chunks in a local Chroma collection."""
 
 import hashlib
+import re
 from pathlib import Path
 
 import chromadb
@@ -61,6 +62,29 @@ class ChromaStore:
                 result["documents"][0], result["metadatas"][0], result["distances"][0]
             )
         ]
+
+    def search_keywords(self, question: str, limit: int = 3) -> list[dict]:
+        """Find Bengali/English phrases directly when embeddings miss titles."""
+        tokens = [
+            token for token in re.findall(r"[\\w\\u0980-\\u09ff]+", question.casefold())
+            if len(token) >= 3
+            and token not in {"গল্পের", "লেখক", "লেখকের", "কে", "কী", "কি", "হয়", "সম্পর্কে", "বলো", "what", "who", "the", "does"}
+        ]
+        if not tokens or not self.collection.count():
+            return []
+        # Retrieve stored text only, and never expose source documents externally.
+        data = self.collection.get(include=["documents", "metadatas"])
+        scored: list[tuple[int, dict]] = []
+        for document, metadata in zip(data["documents"], data["metadatas"]):
+            normalized = document.casefold()
+            score = sum(1 for token in tokens if token in normalized)
+            if score:
+                scored.append((score, {
+                    "text": document, "source": metadata["source"],
+                    "page": metadata["page"], "distance": 0.0,
+                }))
+        scored.sort(key=lambda item: (-item[0], item[1]["page"]))
+        return [item for _, item in scored[:limit]]
 
     def count(self) -> int:
         """Return the number of stored chunks."""
