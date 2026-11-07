@@ -4,7 +4,11 @@ import re
 from typing import Protocol
 
 from src.llm.base import BaseLLMProvider
-from src.rag.evidence import author_supported, is_author_question, numeric_detail_supported
+from src.rag.evidence import (
+    author_supported,
+    is_author_question,
+    numeric_detail_supported,
+)
 from src.rag.models import Citation, RAGAnswer
 from src.vectorstore.chroma_store import ChromaStore
 
