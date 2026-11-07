@@ -241,6 +241,7 @@ def main() -> None:
         st.markdown(answer)
         if not sources and not failed and session.last_debug:
             with st.expander("Why was no answer found?"):
+                st.write(f"Reason: {session.last_debug.get('failure_reason') or 'Unknown'}")
                 st.write(f"Indexed chunks: {session.last_debug['indexed_chunks']}")
                 st.write(f"Retrieval cutoff: {session.last_debug['threshold']}")
                 st.write(f"Nearest passages: {session.last_debug['matches']}")
