@@ -74,6 +74,17 @@ class RAGPipeline:
         recent = _recent_history(history)
         query = _retrieval_query(question, recent)
         matches = self.store.search(self.embedder.embed_query(query), limit=self.top_k)
+        if isinstance(self.store, ChromaStore):
+            # Blend Bengali exact-term matches ahead of English-biased vector results.
+            keywords = self.store.search_keywords(question, limit=self.top_k)
+            seen: set[tuple[str, int, str]] = set()
+            combined: list[dict] = []
+            for match in [*keywords, *matches]:
+                identity = (match["source"], match["page"], match["text"])
+                if identity not in seen:
+                    seen.add(identity)
+                    combined.append(match)
+            matches = combined[:self.top_k]
         self.last_matches = matches
         self.last_model_response = None
         relevant = [
