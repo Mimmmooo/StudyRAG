@@ -92,6 +92,7 @@ class RAGPipeline:
         self.max_distance = max_distance
         self.last_matches: list[dict] = []
         self.last_model_response: str | None = None
+        self.last_failure_reason: str | None = None
 
     def _answer_many(self, questions: list[str]) -> RAGAnswer:
         """Answer numbered questions separately so retrieval remains focused."""
@@ -138,6 +139,7 @@ class RAGPipeline:
             matches = combined[:self.top_k]
         self.last_matches = matches
         self.last_model_response = None
+        self.last_failure_reason = None
         relevant = [
             item for item in matches
             if isinstance(item.get("distance"), (int, float))
@@ -148,6 +150,7 @@ class RAGPipeline:
             and isinstance(item.get("page"), int)
         ]
         if not relevant:
+            self.last_failure_reason = "No passages passed the retrieval relevance threshold."
             return RAGAnswer(NOT_FOUND, ())
         citations = tuple(
             Citation(item["source"], item["page"], item["text"])
@@ -176,18 +179,26 @@ class RAGPipeline:
         answer = self.llm.generate(prompt).strip()
         self.last_model_response = answer
         if not answer or NOT_FOUND.lower() in answer.lower():
+            self.last_failure_reason = "The local model returned no source-supported answer."
             return RAGAnswer(NOT_FOUND, ())
         marker_numbers = [int(n) for n in re.findall(r"\[(\d+)\]", answer)]
         used = list(dict.fromkeys(marker_numbers))
         if not used or any(number < 1 or number > len(citations) for number in used):
+            self.last_failure_reason = "The model omitted a valid source marker such as [1]."
             return RAGAnswer(NOT_FOUND, ())
 
         referenced = tuple(citations[index - 1] for index in used)
         evidence = "\n".join(item.text for item in referenced)
         if is_author_question(question) and not isinstance(self.llm, ExtractiveProvider):
             if not author_supported(answer, evidence):
+                self.last_failure_reason = (
+                    "The named author could not be verified in the cited OCR passage."
+                )
                 return RAGAnswer(NOT_FOUND, ())
             if not numeric_detail_supported(answer, evidence):
+                self.last_failure_reason = (
+                    "The answer contained a number absent from the cited passage."
+                )
                 return RAGAnswer(NOT_FOUND, ())
 
         # Show exactly the evidence the model cited; renumber it for the UI.
