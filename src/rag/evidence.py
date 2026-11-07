@@ -58,7 +58,7 @@ def explicit_author_from_passage(question: str, passage: str) -> str | None:
     """
     q = _normalize(question)
     title_match = re.search(
-        r"([\u0980-\u09ff]{3,})\\s+(?:গল্প|কবিতা|প্রবন্ধ|রচনা)(?:টির|টির|ের)?",
+        r"([\u0980-\u09ff]{3,})\s+(?:গল্প|কবিতা|প্রবন্ধ|রচনা)(?:টির|টির|ের)?",
         q,
     )
     if not title_match:
@@ -71,8 +71,8 @@ def explicit_author_from_passage(question: str, passage: str) -> str | None:
             continue
         for nearby in lines[index : index + 4]:
             labeled = re.search(
-                r"(?:লেখক|রচয়িতা|লিখেছেন|রচনা করেছেন|author|by)\\s*[:：-]?\\s*"
-                r"([\u0980-\u09ff]+(?:\\s+[\u0980-\u09ff]+){0,2})",
+                r"(?:লেখক|রচয়িতা|লিখেছেন|রচনা করেছেন|author|by)\s*[:：-]?\s*"
+                r"([\u0980-\u09ff]+(?:\s+[\u0980-\u09ff]+){0,2})",
                 nearby,
             )
             if labeled:
@@ -82,7 +82,7 @@ def explicit_author_from_passage(question: str, passage: str) -> str | None:
         if line == title and index + 1 < len(lines):
             following = lines[index + 1]
             if (
-                re.fullmatch(r"[\u0980-\u09ff]+(?:\\s+[\u0980-\u09ff]+){1,2}", following)
+                re.fullmatch(r"[\u0980-\u09ff]+(?:\s+[\u0980-\u09ff]+){1,2}", following)
                 and not any(mark in following for mark in ("।", "?", "!", ":"))
             ):
                 candidates.add(following)
