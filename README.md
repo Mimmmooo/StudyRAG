@@ -23,6 +23,18 @@ StudyRAG runs on your computer. Upload text-based PDFs, TXT or Markdown files; i
 - 🔒 Temporary per-browser-session index; clear notes and chat when finished
 - ✅ Ruff, pytest, GitHub Actions on Ubuntu, macOS and Windows with Python 3.11 and 3.12
 
+## Hosted AI answer setup (one-time, app owner only)
+
+To provide AI-written answers **without asking every student for an API key**, the Streamlit app owner can configure a personal free-tier key using **Manage app → Settings → Secrets**:
+
+```toml
+GROQ_API_KEY = "paste-your-personal-free-tier-key-here"
+```
+
+Or configure `GEMINI_API_KEY`. Do not commit the real key in GitHub or put it in a public issue. The website automatically selects the configured cloud AI provider when Ollama is unavailable; Ollama remains the default only when it is reachable from the running app server. Free-tier provider quotas are shared by visitors, so requests may stop working when quotas are exhausted. Students' retrieved document passages and recent context are sent to that provider. Without an owner key, students can still use extractive source lookup for free or supply their own free-tier key. A hosted Streamlit app cannot use an Ollama model running on a student's laptop.
+
+Large PDF embeddings are processed in bounded batches to reduce peak memory consumption, but free hosting may still run out of RAM when indexing complex books.
+
 ## Easiest option for students: public web app (one-time deployment by owner)
 
 Students should **not** need GitHub accounts, Codespaces, terminals, or installations. Publish StudyRAG once on [Streamlit Community Cloud](https://share.streamlit.io/), then share the generated `*.streamlit.app` URL. Anyone can open the public site and upload notes.
