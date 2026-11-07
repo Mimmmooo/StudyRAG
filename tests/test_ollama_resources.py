@@ -27,3 +27,23 @@ def test_ollama_timeout_explains_ram_and_alternatives() -> None:
     ):
         with pytest.raises(LLMError, match="reduce passages to 2-3"):
             OllamaProvider(model="qwen3:4b").generate("question")
+
+
+def test_qwen_uses_no_think_prompt() -> None:
+    with patch("src.llm.ollama_provider.post_json", return_value={"response": "লেখক: সত্যজিৎ রায় [1]"}) as post:
+        assert OllamaProvider(model="qwen3:4b").generate("Study passages:\\n[1] নাম সত্যজিৎ রায়")
+    prompt = post.call_args.args[1]["prompt"]
+    assert prompt.startswith("/no_think")
+    assert "Never output reasoning or analysis" in prompt
+
+
+def test_ollama_discards_explicit_thinking_tag() -> None:
+    response = {"response": "<think>internal reasoning</think>লেখক: সত্যজিৎ রায় [1]"}
+    with patch("src.llm.ollama_provider.post_json", return_value=response):
+        assert OllamaProvider(model="qwen3:4b").generate("question") == "লেখক: সত্যজিৎ রায় [1]"
+
+
+def test_ollama_rejects_unfinished_thinking() -> None:
+    response = {"response": "<think>still reasoning"}
+    with patch("src.llm.ollama_provider.post_json", return_value=response):
+        assert OllamaProvider(model="qwen3:4b").generate("question") == ""
