@@ -136,13 +136,16 @@ def test_author_attribution_accepts_matching_source() -> None:
     assert rag.ask("কাকতাড়ুয়া গল্পের লেখক কে?").citations[0].page == 4
 
 
-def test_author_answer_rejects_invented_page_number() -> None:
-    """A model must not invent a page number outside its cited excerpt."""
+def test_author_answer_omits_invented_page_number() -> None:
+    """Remove an unsupported author-page suffix rather than lose the answer."""
     rag, _, _, _ = _pipeline(
         [_match("কাকতাড়ুয়া\\nসত্যজিৎ রায়", 0.1)],
         "কাকতাড়ুয়া গল্পের লেখক সত্যজিৎ রায় ১৭ পৃষ্ঠায় ছিলেন [1]",
     )
-    assert not rag.ask("কাকতাড়ুয়া গল্পের লেখক কে?").citations
+    result = rag.ask("কাকতাড়ুয়া গল্পের লেখক কে?")
+    assert "১৭" not in result.answer
+    assert "সত্যজিৎ রায়" in result.answer
+
 
 
 def test_retrieval_failure_reports_clear_reason() -> None:
