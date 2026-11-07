@@ -117,7 +117,7 @@ def test_ui_service_forwards_history_and_top_k() -> None:
     session.store = Mock()
     session.store.count.return_value = 2
     session.embedder = Mock()
-    session.settings = Mock()
+    session.settings = Mock(max_distance=2.0)
     with (
         patch("src.ui_service.create_provider", return_value=Mock()),
         patch("src.ui_service.RAGPipeline") as rag_class,
@@ -135,3 +135,57 @@ def test_ui_service_forwards_history_and_top_k() -> None:
     rag_class.return_value.ask.assert_called_once_with(
         "And why?", history=[("user", "Explain vectors")]
     )
+
+
+def test_reindex_replaces_old_chunks(tmp_path: Path) -> None:
+    """Replacing a source removes outdated chunks without touching other files."""
+    from src.ingestion.chunker import TextChunk
+
+    store = ChromaStore(tmp_path / "replace")
+    store.add_chunks(
+        [TextChunk("old content", "notes.txt", 1, 0),
+         TextChunk("keep this", "other.txt", 1, 0)],
+        [[1.0, 0.0], [0.0, 1.0]],
+    )
+    store.delete_source("notes.txt")
+    store.add_chunks([TextChunk("new content", "notes.txt", 1, 0)], [[1.0, 0.0]])
+    documents = store.collection.get(include=["documents"])["documents"]
+    assert sorted(documents) == ["keep this", "new content"]
+
+
+def test_ingestion_prepares_all_files_before_mutating_index(tmp_path: Path) -> None:
+    """Bad second file must not erase or replace a previously indexed source."""
+    from src.config import Settings
+    from src.ingestion.service import ingest_files
+
+    store = Mock()
+    embedder = Mock()
+    embedder.embed_documents.return_value = [[1.0, 0.0]]
+    good = tmp_path / "good.txt"
+    good.write_text("Valid notes", encoding="utf-8")
+    bad = tmp_path / "bad.pdf"
+    bad.write_bytes(b"not a pdf")
+    with pytest.raises(ValueError, match="Could not read PDF"):
+        ingest_files([good, bad], Settings(), embedder, store)
+    store.delete_source.assert_not_called()
+    store.add_chunks.assert_not_called()
+
+
+@pytest.mark.parametrize("answer", [
+    "Fact with invented source [9]",
+    "Fact without a citation",
+])
+def test_ungrounded_citation_markers_are_rejected(answer: str) -> None:
+    """Only answers that cite an available passage can be returned."""
+    rag, _, llm = _pipeline()
+    llm.generate.return_value = answer
+    result = rag.ask("What does it store?")
+    assert result.answer == NOT_FOUND
+    assert result.citations == ()
+
+
+def test_valid_citation_markers_still_work() -> None:
+    """Valid citations pass the new answer validation."""
+    rag, _, llm = _pipeline()
+    llm.generate.return_value = "Vectors [1]"
+    assert rag.ask("What does it store?").answer == "Vectors [1]"
