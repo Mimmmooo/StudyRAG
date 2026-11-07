@@ -29,9 +29,33 @@ def _recent_history(history: list[tuple[str, str]] | None) -> list[tuple[str, st
             if role in {"user", "assistant"} and text.strip()]
 
 
+_FOLLOWUP_START = re.compile(
+    r"^(?:সে|তার|তারা|তিনি|ওরা|এটা|এটি|ওটি|সেটা|তাহলে|কেন|কীভাবে|আর |"
+    r"it\\b|they\\b|he\\b|she\\b|why\\b|how\\b|and\\b)",
+    re.IGNORECASE,
+)
+_NUMBERED_QUESTION = re.compile(r"(?<!\\S)\\d{1,2}[.)]\\s+")
+
+
+def _split_questions(question: str) -> list[str]:
+    """Split an explicitly numbered list into independent questions."""
+    if len(_NUMBERED_QUESTION.findall(question)) < 2:
+        return [question]
+    items = _NUMBERED_QUESTION.split(question)
+    questions = [part.strip() for part in items if part.strip()]
+    if len(questions) > 8 or any(len(part) < 5 for part in questions):
+        return [question]
+    return questions
+
+
 def _retrieval_query(question: str, history: list[tuple[str, str]]) -> str:
-    """Include recent user wording for ambiguous follow-up searches."""
-    previous_questions = [text for role, text in history if role == "user"]
+    """Use history only for short, referential follow-ups."""
+    if len(question) > 130 or not _FOLLOWUP_START.search(question.strip()):
+        return question
+    previous_questions = [
+        text for role, text in history
+        if role == "user" and len(_split_questions(text)) == 1
+    ]
     if not previous_questions:
         return question
     return f"{previous_questions[-1]}\n{question}"
@@ -69,6 +93,24 @@ class RAGPipeline:
         self.last_matches: list[dict] = []
         self.last_model_response: str | None = None
 
+    def _answer_many(self, questions: list[str]) -> RAGAnswer:
+        """Answer numbered questions separately so retrieval remains focused."""
+        lines: list[str] = []
+        sources: list[Citation] = []
+        for index, question in enumerate(questions, start=1):
+            # Do not mix evidence from unrelated numbered questions.
+            result = self.ask(question, history=None)
+            answer = result.answer
+            offset = len(sources)
+            answer = re.sub(
+                r"\\[(\\d+)\\]",
+                lambda marker: f"[{offset + int(marker.group(1))}]",
+                answer,
+            )
+            sources.extend(result.citations)
+            lines.append(f"**{index}. {question}**\n\n{answer}")
+        return RAGAnswer("\n\n".join(lines), tuple(sources))
+
     def ask(
         self,
         question: str,
@@ -77,6 +119,9 @@ class RAGPipeline:
         """Answer from document evidence, keeping recent turns for follow-ups."""
         if not question.strip():
             raise ValueError("Question cannot be empty")
+        parts = _split_questions(question)
+        if len(parts) > 1:
+            return self._answer_many(parts)
         recent = _recent_history(history)
         query = _retrieval_query(question, recent)
         matches = self.store.search(self.embedder.embed_query(query), limit=self.top_k)
