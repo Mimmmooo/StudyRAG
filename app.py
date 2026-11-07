@@ -38,13 +38,9 @@ def _ollama_online() -> bool:
         return False
 
 
-def _hosted_key(name: str) -> str | None:
-    """Read server-managed keys without displaying them in the UI."""
-    try:
-        key = st.secrets.get(name)
-    except (FileNotFoundError, KeyError):
-        key = None
-    return str(key) if key else os.getenv(name) or None
+def _configured_key(name: str) -> str | None:
+    """Read optional provider keys from local environment variables."""
+    return os.getenv(name) or None
 
 
 def _sidebar(session: StudySession) -> tuple[str, str | None, int]:
@@ -53,8 +49,8 @@ def _sidebar(session: StudySession) -> tuple[str, str | None, int]:
         st.header("Study settings")
         st.caption(f"Upload limit: {MAX_UPLOAD_MB} MB per file · OCR-enabled build")
         server_keys = {
-            "groq": _hosted_key("GROQ_API_KEY"),
-            "gemini": _hosted_key("GEMINI_API_KEY"),
+            "groq": _configured_key("GROQ_API_KEY"),
+            "gemini": _configured_key("GEMINI_API_KEY"),
         }
         available_ollama = _ollama_online()
         default_provider = select_default_provider(
@@ -84,14 +80,14 @@ def _sidebar(session: StudySession) -> tuple[str, str | None, int]:
                 help="Your key is used for this session and not stored in the repository.",
             )
         elif provider in {"gemini", "groq"}:
-            st.caption("AI answers are enabled by the app owner.")
+            st.caption("Using an API key from the local environment.")
         elif provider == "ollama":
             if available_ollama:
                 st.caption("Local Ollama is available and will generate answers.")
             else:
                 st.warning(
-                    "Ollama is unavailable on this server. For cloud AI answers, "
-                    "the app owner must configure a Gemini or Groq key."
+                    "Ollama is not running on this computer. Start StudyRAG with "
+                    "scripts/start.sh (Linux/macOS) or scripts/start.ps1 (Windows)."
                 )
         else:
             st.caption("No key required. Shows relevant source text, not a generated AI explanation.")
@@ -124,8 +120,8 @@ def _sidebar(session: StudySession) -> tuple[str, str | None, int]:
             except (ValueError, OSError, RuntimeError, MemoryError) as exc:
                 st.error(f"Could not index documents: {exc}")
                 st.info(
-                    "If a large PDF fails, try a smaller text-based PDF first. "
-                    "Cloud memory limits may prevent very large textbooks from indexing."
+                    "For very large PDFs, check your computer\u0027s free RAM and disk. "
+                    "Scanned pages also need Bengali/English Tesseract OCR."
                 )
             else:
                 st.success(
@@ -147,7 +143,7 @@ def _sidebar(session: StudySession) -> tuple[str, str | None, int]:
             st.session_state.pop("study_session", None)
             st.session_state.pop("messages", None)
             st.rerun()
-        st.caption("Indexed text is stored temporarily on this app server.")
+        st.caption("Indexed text stays in this computer\u0027s temporary session storage.")
     return provider, key, top_k
 
 
