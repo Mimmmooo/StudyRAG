@@ -180,7 +180,7 @@ class RAGPipeline:
             "Answer briefly using only the document passages. "
             "For author questions, copy a name only when it appears in the text. "
             "Do not mention source numbers or PDF pages. "
-            "Do not invent facts. Previous turns resolve references, not facts.\n\n"
+            "Do not add unsupported facts. Previous turns resolve references, not facts.\n\n"
             f"Previous conversation:\n{conversation or '(none)'}\n\n"
             f"Study passages:\n{_source_context(citations)}\n\n"
             f"Question: {question}\nAnswer:"
