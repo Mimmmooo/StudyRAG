@@ -1,5 +1,7 @@
 """Ollama local model implementation."""
 
+import re
+
 from src.llm.base import BaseLLMProvider, LLMError
 from src.llm.http import post_json
 
@@ -20,7 +22,13 @@ class OllamaProvider(BaseLLMProvider):
                 f"{self.base_url}/api/generate",
                 {
                     "model": self.model,
-                    "prompt": prompt,
+                    "prompt": (
+                        "/no_think\n"
+                        "Give only the final answer with its source marker, e.g. [1]. "
+                        "Never output reasoning or analysis. "
+                        "The passages are provided inline in the prompt; you can read them.\n"
+                        + prompt
+                    ),
                     "stream": False,
                     "think": False,
                     "keep_alive": "5m",
@@ -47,4 +55,8 @@ class OllamaProvider(BaseLLMProvider):
         answer = data.get("response")
         if not isinstance(answer, str):
             raise LLMError("Ollama returned no response. Check the model name.")
-        return answer.strip()
+        # Some Qwen versions may still emit explicit thinking tags.
+        cleaned = re.sub(r"<think>.*?</think>", "", answer, flags=re.DOTALL).strip()
+        if "<think>" in cleaned or "</think>" in cleaned:
+            return ""
+        return cleaned
