@@ -48,7 +48,7 @@ def _sidebar(session: StudySession) -> tuple[str, str | None, int]:
             "Upload your notes",
             type=["pdf", "txt", "md"],
             accept_multiple_files=True,
-            help="Text PDFs, TXT and MD. Maximum 15 MB per file.",
+            help="Text PDFs, TXT and MD. Maximum 200 MB per file. Large PDFs may exceed free hosting memory.",
         )
         if st.button("Index selected files", disabled=not uploads, use_container_width=True):
             try:
