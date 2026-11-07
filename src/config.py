@@ -15,7 +15,7 @@ class Settings:
 
     chroma_dir: Path = Path(os.getenv("STUDYRAG_CHROMA_DIR", ".chroma"))
     embedding_model: str = os.getenv(
-        "STUDYRAG_EMBEDDING_MODEL", "BAAI/bge-small-en-v1.5"
+        "STUDYRAG_EMBEDDING_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     )
     chunk_size: int = int(os.getenv("STUDYRAG_CHUNK_SIZE", "800"))
     chunk_overlap: int = int(os.getenv("STUDYRAG_CHUNK_OVERLAP", "120"))
