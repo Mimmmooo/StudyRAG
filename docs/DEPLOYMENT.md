@@ -2,7 +2,13 @@
 
 StudyRAG is free and open source. There are two supported *paths to try*: running on your own computer, or experimenting with Streamlit Community Cloud. The cloud option is not yet validated for StudyRAG's heavy ML dependencies, so a successful build and stable performance are **not guaranteed**.
 
-## Option 0: GitHub Codespaces (browser-only, experimental)
+## Recommended for end users: Streamlit Community Cloud
+
+The repository owner deploys **once** at https://share.streamlit.io/ using repository `Mimmmooo/StudyRAG`, branch `fix/cross-platform-reliability` for pre-merge validation, and file `app.py`, with Python 3.12. Share the resulting public `*.streamlit.app` URL. Students need only a browser, not GitHub, Python, Codespaces or terminal commands.
+
+Select **extractive** for no-key, no-LLM quoted passage answers, with page citations. Gemini/Groq are optional BYOK for AI-generated answers. The default lightweight CPU-only FastEmbed ONNX model avoids PyTorch. Actual hosting build, cold-start latency, memory usage, PDF ingestion and generated-answer behavior still require live smoke tests. Free hosting can sleep or hit memory limits. Uploading documents sends them to the hosting service; students should avoid confidential notes.
+
+## Option 0: GitHub Codespaces (developer-only, experimental)
 
 For zero local software installation, use [Create a StudyRAG Codespace](https://github.com/codespaces/new?hide_repo_select=true&ref=fix%2Fcross-platform-reliability&repo=1448049876). Sign in to GitHub and create the Codespace in your browser. The repository's devcontainer installs all Python dependencies on the remote Linux machine and starts Streamlit automatically. Open the forwarded private port 8501 to use the app. No Ubuntu/macOS/Windows Python installation is required.
 
