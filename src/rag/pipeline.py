@@ -7,6 +7,7 @@ from src.llm.base import BaseLLMProvider
 from src.llm.extractive_provider import ExtractiveProvider
 from src.rag.evidence import (
     author_supported,
+    explicit_author_from_passage,
     is_author_question,
     numeric_detail_supported,
 )
@@ -156,6 +157,18 @@ class RAGPipeline:
             Citation(item["source"], item["page"], item["text"])
             for item in relevant
         )
+        # For explicit title-and-author headings, prefer a verbatim source
+        # extraction over an unreliable small-model completion.
+        if is_author_question(question) and not isinstance(self.llm, ExtractiveProvider):
+            found = [
+                (name, item)
+                for item in citations
+                if (name := explicit_author_from_passage(question, item.text))
+            ]
+            distinct = {name for name, _ in found}
+            if len(distinct) == 1:
+                name, source = found[0]
+                return RAGAnswer(f"লেখক: {name} [1]", (source,))
         conversation = "\n".join(
             f"{role}: {text}" for role, text in recent
         )
