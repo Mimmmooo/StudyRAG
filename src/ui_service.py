@@ -12,7 +12,8 @@ from src.rag.models import RAGAnswer
 from src.rag.pipeline import RAGPipeline
 from src.vectorstore.chroma_store import ChromaStore
 
-MAX_UPLOAD_BYTES = 15 * 1024 * 1024
+MAX_UPLOAD_MB = 200
+MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
 
 
 class UploadedFile(Protocol):
@@ -49,7 +50,7 @@ class StudySession:
                 raise ValueError(f"Unsupported file type: {name}")
             data = upload.getvalue()
             if len(data) > MAX_UPLOAD_BYTES:
-                raise ValueError(f"{name} exceeds the 15 MB limit.")
+                raise ValueError(f"{name} exceeds the {MAX_UPLOAD_MB} MB limit.")
             if not data:
                 raise ValueError(f"{name} is empty.")
             payloads.append((name, data))
