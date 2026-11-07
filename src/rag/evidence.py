@@ -48,3 +48,42 @@ def numeric_detail_supported(answer: str, evidence: str) -> bool:
     """Reject unsupported digits, such as invented textbook page numbers."""
     answer_numbers = set(re.findall(r"\d+", re.sub(r"\[\d+\]", "", answer)))
     return answer_numbers.issubset(set(re.findall(r"\d+", evidence)))
+
+
+def explicit_author_from_passage(question: str, passage: str) -> str | None:
+    """Extract only an explicitly labeled author next to the queried title.
+
+    Scanned pages often contain OCR mistakes. Never treat a character's name
+    in story prose as the author, and never use the model's world knowledge.
+    """
+    q = _normalize(question)
+    title_match = re.search(
+        r"([\u0980-\u09ff]{3,})\\s+(?:গল্প|কবিতা|প্রবন্ধ|রচনা)(?:টির|টির|ের)?",
+        q,
+    )
+    if not title_match:
+        return None
+    title = title_match.group(1)
+    lines = [_normalize(line) for line in passage.splitlines() if line.strip()]
+    candidates: set[str] = set()
+    for index, line in enumerate(lines):
+        if title not in line:
+            continue
+        for nearby in lines[index : index + 4]:
+            labeled = re.search(
+                r"(?:লেখক|রচয়িতা|লিখেছেন|রচনা করেছেন|author|by)\\s*[:：-]?\\s*"
+                r"([\u0980-\u09ff]+(?:\\s+[\u0980-\u09ff]+){0,2})",
+                nearby,
+            )
+            if labeled:
+                candidates.add(labeled.group(1))
+        # Typical title/author layout: title on its own line, then a
+        # short, standalone name on the following line.
+        if line == title and index + 1 < len(lines):
+            following = lines[index + 1]
+            if (
+                re.fullmatch(r"[\u0980-\u09ff]+(?:\\s+[\u0980-\u09ff]+){1,2}", following)
+                and not any(mark in following for mark in ("।", "?", "!", ":"))
+            ):
+                candidates.add(following)
+    return next(iter(candidates)) if len(candidates) == 1 else None
