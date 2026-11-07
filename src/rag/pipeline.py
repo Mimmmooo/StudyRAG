@@ -64,7 +64,7 @@ def _retrieval_query(question: str, history: list[tuple[str, str]]) -> str:
 def _source_context(citations: tuple[Citation, ...]) -> str:
     """Assign stable passage numbers to retrieved file/page evidence."""
     return "\n\n".join(
-        f"[{index}] File: {item.source}, page {item.page}\n{item.text}"
+        f"[{index}] File: {item.source}, page {item.page}\n{item.text[:650]}"
         for index, item in enumerate(citations, start=1)
     )
 
