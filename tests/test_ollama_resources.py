@@ -33,7 +33,7 @@ def test_qwen_uses_no_think_prompt() -> None:
         assert OllamaProvider(model="qwen3:4b").generate("Study passages:\\n[1] নাম সত্যজিৎ রায়")
     prompt = post.call_args.args[1]["prompt"]
     assert prompt.startswith("/no_think")
-    assert "Never output reasoning or analysis" in prompt
+    assert "Do not write analysis." in prompt
 
 
 def test_ollama_discards_explicit_thinking_tag() -> None:
