@@ -130,3 +130,7 @@ Streamlit Community Cloud offers a free GitHub-connected hosting path: https://s
 ### Scanned PDF OCR
 
 PyMuPDF reads native PDF text; pages with no text are rasterized individually and passed to Tesseract with Bengali and English trained data. Streamlit Cloud installs the binary and both languages using `packages.txt`. OCR can take time and might misread low-quality printed text. Confirm source-page citations on the actual hosted app. The current free hosting tier does not guarantee successful indexing at the 200 MB ceiling.
+
+### Ollama hosting limitations
+
+Ollama works without an API key only if its process and model run on the same reachable computer or a securely managed dedicated server. The 3B local model consumes substantial memory; GitHub Actions is for transient CI, not a persistent backend. Streamlit Community Cloud has variable free memory quotas, so an embedded Ollama process is not an assured deployment option. The recommended public demonstration uses an owner-configured provider key in Streamlit Secrets, with shared free-tier quota limits; local development can still use Ollama without a key.
