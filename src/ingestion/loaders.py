@@ -12,6 +12,8 @@ import fitz
 SUPPORTED_SUFFIXES = {".pdf", ".txt", ".md"}
 OCR_DPI = 130
 OCR_TIMEOUT_SECONDS = 30
+MIN_SEARCHABLE_TEXT_CHARS = 80
+SCANNED_IMAGE_AREA_FRACTION = 0.65
 
 
 @dataclass(frozen=True)
@@ -26,6 +28,25 @@ class DocumentPage:
 def _clean(text: str) -> str:
     """Normalize whitespace without merging separate lines."""
     return "\n".join(line.strip() for line in text.splitlines() if line.strip())
+
+
+def _is_image_dominant(page: fitz.Page, text: str) -> bool:
+    """Spot scanned pages whose tiny text layer contains only labels or page numbers."""
+    if len(text.strip()) >= MIN_SEARCHABLE_TEXT_CHARS:
+        return False
+    page_area = page.rect.get_area()
+    if page_area <= 0:
+        return False
+    for image in page.get_image_info():
+        bounds = image.get("bbox")
+        if bounds is None:
+            continue
+        visible = fitz.Rect(bounds) & page.rect
+        if not visible.is_empty and (
+            visible.get_area() / page_area >= SCANNED_IMAGE_AREA_FRACTION
+        ):
+            return True
+    return False
 
 
 def _ocr_page(page: fitz.Page) -> str:
@@ -67,7 +88,7 @@ def _cache_path(path: Path) -> Path:
         for block in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(block)
     root = Path(os.getenv("STUDYRAG_OCR_CACHE_DIR", str(Path.home() / ".cache" / "studyrag" / "ocr")))
-    return root / f"{digest.hexdigest()}-dpi{OCR_DPI}-v1.json"
+    return root / f"{digest.hexdigest()}-dpi{OCR_DPI}-v2.json"
 
 
 def _read_cached_pages(cache: Path, source: str) -> list[DocumentPage] | None:
@@ -114,8 +135,10 @@ def _load_pdf(path: Path) -> list[DocumentPage]:
                 raise ValueError(f"Password-protected PDF: {path.name}")
             for index, page in enumerate(document, start=1):
                 text = _clean(page.get_text("text"))
-                if not text:
-                    text = _ocr_page(page)
+                if not text or _is_image_dominant(page, text):
+                    scanned_text = _ocr_page(page)
+                    if len(scanned_text) > len(text):
+                        text = scanned_text
                 if text:
                     pages.append(DocumentPage(text, path.name, index))
     except (ValueError, RuntimeError) as exc:

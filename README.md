@@ -7,7 +7,7 @@
 ## What works
 
 - PDF/TXT/MD upload (200 MiB per file; practical limit depends on your computer).
-- Bengali and English **scanned PDF OCR** using Tesseract, with a local OCR cache to speed repeat indexing.
+- Bengali and English **scanned PDF OCR** using Tesseract, with a local OCR cache to speed repeat indexing. Image-dominant pages are OCR'd even when a selectable page number or watermark is present.
 - Multilingual ONNX embeddings via FastEmbed and a temporary ChromaDB index per session.
 - Bengali keyword/title retrieval alongside vector similarity, without citation markers in chat.
 - Local Ollama-generated answers and follow-up questions with a simple chat interface.
@@ -91,7 +91,7 @@ The Streamlit UI (`app.py`) contains no ingestion or RAG business logic. The mod
 
 ## Why Qwen2.5 3B?
 
-Qwen3 4B repeatedly timed out or produced analysis instead of final Bengali answers on an 8 GB Ubuntu machine. The default `qwen2.5:3b` is a smaller non-thinking baseline; it is more practical for local CPU use, although Bengali answer accuracy is not guaranteed. Avoid forcing `OLLAMA_MODEL=qwen3:4b` unless you deliberately want to compare models. OCR uses one CPU thread per Tesseract invocation and a modest DPI reduction; first-time processing still depends on page count and hardware. Repeat uploads reuse locally cached OCR results when the file has not changed.
+Qwen3 4B repeatedly timed out or produced analysis instead of final Bengali answers on an 8 GB Ubuntu machine. The default `qwen2.5:3b` is a smaller non-thinking baseline; it is more practical for local CPU use, although Bengali answer accuracy is not guaranteed. Avoid forcing `OLLAMA_MODEL=qwen3:4b` unless you deliberately want to compare models. OCR uses one CPU thread per Tesseract invocation and a modest DPI reduction; first-time processing still depends on page count and hardware. Repeat uploads reuse locally cached OCR results when the file has not changed. The image-dominant scan detection update uses a versioned OCR cache, so existing PDFs may need one reprocessing pass after updating.
 
 ## Other answer providers
 
@@ -113,7 +113,7 @@ On Windows use `.venv\Scripts\python.exe` instead. Ruff/pytest are developer too
 
 ## Notes and limitations
 
-- Scanned OCR is best-effort and can misread characters, names, punctuation or columns. The app no longer displays citation markers or verifies each factual claim: check important answers against the original PDF.
+- Scanned OCR is best-effort and can misread characters, names, punctuation or columns. Image-heavy pages with only a page number or short overlay are now checked for OCR; tiny inset images on text pages do not trigger it. The app no longer displays citation markers or verifies each factual claim: check important answers against the original PDF.
 - 200 MiB is the upload ceiling, not a universal indexing performance guarantee. Processing speed depends on scan DPI, page count, RAM and CPU.
 - The local Streamlit server binds to `127.0.0.1`; it is **not** a public website. Data stays on your computer when using local Ollama.
 - PDF page numbers refer to physical pages of the uploaded PDF, which can differ from printed page numbers.
@@ -123,3 +123,7 @@ On Windows use `.venv\Scripts\python.exe` instead. Ruff/pytest are developer too
 ## Project
 
 This is a student open-source portfolio project under the [MIT License](LICENSE). Technical structure: [Architecture](docs/ARCHITECTURE.md). Contributions: [CONTRIBUTING](CONTRIBUTING.md).
+
+## OCR engine evaluation (2026)
+
+[Baidu Unlimited-OCR-2](https://huggingface.co/baidu/Unlimited-OCR-2) was evaluated as a potential replacement. Its model is MIT licensed and targets long document parsing, but the documented inference path is GPU-heavy (tested on NVIDIA A800 80 GB with CUDA). StudyRAG keeps Tesseract as the default free CPU OCR for 8 GB local machines. We adopted the practical lesson of checking for image-dominant scanned pages even when a sparse text layer exists, rather than adding an untested large model download. See [OCR review](docs/OCR_REVIEW.md).
