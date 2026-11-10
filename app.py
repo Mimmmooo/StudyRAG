@@ -224,6 +224,52 @@ def _styles() -> None:
           }
         }
 
+        /* Small, accessible sun/moon action in the upper-right corner. */
+        .st-key-theme_control {
+          position: fixed;
+          top: 1rem;
+          right: 1.45rem;
+          width: 48px;
+          z-index: 999;
+        }
+        .st-key-theme_control div.stButton > button {
+          width: 46px;
+          height: 46px;
+          min-height: 46px;
+          padding: 0;
+          border-radius: 50%;
+          border: 1px solid rgba(182, 168, 255, .42);
+          background: linear-gradient(145deg, #33345f, #1d2847);
+          color: #fdf4d4;
+          font-size: 1.2rem;
+          box-shadow: 0 8px 28px rgba(5, 9, 24, .3);
+          backdrop-filter: blur(15px);
+          -webkit-backdrop-filter: blur(15px);
+          transition: transform .22s ease, box-shadow .22s ease,
+                      background .22s ease, border-color .22s ease;
+        }
+        .st-key-theme_control div.stButton > button:hover {
+          transform: translateY(-2px) rotate(12deg);
+          border-color: #bdadff;
+          background: linear-gradient(145deg, #4d4a8f, #29375c);
+          box-shadow: 0 10px 30px rgba(113, 92, 226, .25);
+        }
+        .st-key-theme_control div.stButton > button:focus-visible {
+          outline: 3px solid #ad9bff;
+          outline-offset: 3px;
+        }
+        @media (max-width: 700px) {
+          .st-key-theme_control { top: .6rem; right: .7rem; width: 42px; }
+          .st-key-theme_control div.stButton > button {
+            width: 42px;
+            height: 42px;
+            min-height: 42px;
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .st-key-theme_control div.stButton > button { transition: none !important; }
+          .st-key-theme_control div.stButton > button:hover { transform: none; }
+        }
         /* A quiet, compact start screen rather than a large dashboard card. */
         .block-container { max-width: 900px; padding-top: 1.45rem; }
         .sr-heading { max-width: 650px; margin: .3rem auto 1rem; text-align: center; }
@@ -303,6 +349,16 @@ def _styles() -> None:
         st.markdown(
             """
             <style>
+            .st-key-theme_control div.stButton > button {
+              color: #4a3f82;
+              background: linear-gradient(145deg, #ffffff, #e8e3fb);
+              border-color: #c9c0ef;
+              box-shadow: 0 7px 22px #6577a326;
+            }
+            .st-key-theme_control div.stButton > button:hover {
+              background: linear-gradient(145deg, #f9f6ff, #dcd4fc);
+              border-color: #a99be3;
+            }
             .stApp {
               color: #1c2941;
               background:
@@ -405,7 +461,6 @@ def _sidebar(session: StudySession) -> int:
             '<div><strong>StudyRAG</strong><small>Your private study desk</small></div></div>',
             unsafe_allow_html=True,
         )
-        st.toggle("☀️ Light mode", key="light_mode", help="Switch between dark and light study themes.")
         model = escape(os.getenv("OLLAMA_MODEL", "qwen2.5:3b"))
         online = _ollama_online()
         state_class = "sr-online" if online else "sr-offline"
@@ -530,6 +585,23 @@ def _render_welcome(has_files: bool) -> None:
     )
 
 
+def _toggle_theme() -> None:
+    """Invert the current browser session's color mode."""
+    st.session_state.light_mode = not st.session_state.get("light_mode", False)
+
+
+def _theme_switch() -> None:
+    """Render a compact sun/moon action in the app's upper-right corner."""
+    light = st.session_state.get("light_mode", False)
+    with st.container(key="theme_control"):
+        st.button(
+            "🌙" if light else "☀️",
+            key="theme_button",
+            help="Switch to dark mode" if light else "Switch to light mode",
+            on_click=_toggle_theme,
+        )
+
+
 def main() -> None:
     """Render the upload workflow and grounded chat without business logic."""
     st.set_page_config(
@@ -543,6 +615,7 @@ def main() -> None:
     if "messages" not in st.session_state:
         st.session_state.messages = []
     top_k = _sidebar(session)
+    _theme_switch()
 
     st.markdown(
         '<div class="sr-heading"><div class="sr-eyebrow">FOCUS MODE</div>'
