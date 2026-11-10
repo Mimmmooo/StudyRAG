@@ -224,57 +224,51 @@ def _styles() -> None:
           }
         }
 
-        /* Accessible animated theme switch: top-right of the app, never in sidebar. */
+        /* Small, accessible sun/moon action in the upper-right corner. */
         .st-key-theme_control {
           position: fixed;
-          top: 1.15rem;
-          right: 1.6rem;
-          width: fit-content;
+          top: 1rem;
+          right: 1.45rem;
+          width: 48px;
           z-index: 999;
-          border: 1px solid rgba(175, 169, 248, .32);
-          border-radius: 999px;
-          padding: .25rem .75rem;
-          background: rgba(25, 34, 58, .92);
-          box-shadow: 0 8px 24px rgba(4, 8, 22, .25);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          transition: transform .22s ease, background .22s ease, border-color .22s ease;
         }
-        .st-key-theme_control:hover {
-          transform: translateY(-2px);
-          border-color: #a99df9;
+        .st-key-theme_control div.stButton > button {
+          width: 46px;
+          height: 46px;
+          min-height: 46px;
+          padding: 0;
+          border-radius: 50%;
+          border: 1px solid rgba(182, 168, 255, .42);
+          background: linear-gradient(145deg, #33345f, #1d2847);
+          color: #fdf4d4;
+          font-size: 1.2rem;
+          box-shadow: 0 8px 28px rgba(5, 9, 24, .3);
+          backdrop-filter: blur(15px);
+          -webkit-backdrop-filter: blur(15px);
+          transition: transform .22s ease, box-shadow .22s ease,
+                      background .22s ease, border-color .22s ease;
         }
-        .st-key-theme_control [data-testid="stToggle"] {
-          margin: 0;
+        .st-key-theme_control div.stButton > button:hover {
+          transform: translateY(-2px) rotate(12deg);
+          border-color: #bdadff;
+          background: linear-gradient(145deg, #4d4a8f, #29375c);
+          box-shadow: 0 10px 30px rgba(113, 92, 226, .25);
         }
-        .st-key-theme_control [data-testid="stToggle"] label {
-          gap: .55rem;
-          cursor: pointer;
-          font-size: .84rem;
-          font-weight: 650;
-          color: #e4e8fa;
-          white-space: nowrap;
-        }
-        .st-key-theme_control [data-testid="stToggle"] [role="switch"] {
-          transition: background .25s ease, box-shadow .25s ease;
-        }
-        .st-key-theme_control [data-testid="stToggle"] [role="switch"]:focus-visible {
-          outline: 3px solid #b9aaff;
+        .st-key-theme_control div.stButton > button:focus-visible {
+          outline: 3px solid #ad9bff;
           outline-offset: 3px;
         }
         @media (max-width: 700px) {
-          .st-key-theme_control {
-            top: .65rem;
-            right: .65rem;
-            padding: .16rem .48rem;
+          .st-key-theme_control { top: .6rem; right: .7rem; width: 42px; }
+          .st-key-theme_control div.stButton > button {
+            width: 42px;
+            height: 42px;
+            min-height: 42px;
           }
         }
         @media (prefers-reduced-motion: reduce) {
-          .st-key-theme_control,
-          .st-key-theme_control [role="switch"] {
-            transition: none !important;
-          }
-          .st-key-theme_control:hover { transform: none; }
+          .st-key-theme_control div.stButton > button { transition: none !important; }
+          .st-key-theme_control div.stButton > button:hover { transform: none; }
         }
         /* A quiet, compact start screen rather than a large dashboard card. */
         .block-container { max-width: 900px; padding-top: 1.45rem; }
@@ -355,13 +349,15 @@ def _styles() -> None:
         st.markdown(
             """
             <style>
-            .st-key-theme_control {
-              background: rgba(255, 255, 255, .94);
-              border-color: #cdc8ed;
-              box-shadow: 0 8px 22px #8490b12b;
+            .st-key-theme_control div.stButton > button {
+              color: #4a3f82;
+              background: linear-gradient(145deg, #ffffff, #e8e3fb);
+              border-color: #c9c0ef;
+              box-shadow: 0 7px 22px #6577a326;
             }
-            .st-key-theme_control [data-testid="stToggle"] label {
-              color: #394569;
+            .st-key-theme_control div.stButton > button:hover {
+              background: linear-gradient(145deg, #f9f6ff, #dcd4fc);
+              border-color: #a99be3;
             }
             .stApp {
               color: #1c2941;
@@ -589,13 +585,20 @@ def _render_welcome(has_files: bool) -> None:
     )
 
 
+def _toggle_theme() -> None:
+    """Invert the current browser session's color mode."""
+    st.session_state.light_mode = not st.session_state.get("light_mode", False)
+
+
 def _theme_switch() -> None:
-    """Show a compact theme control in the upper-right app corner."""
+    """Render a compact sun/moon action in the app's upper-right corner."""
+    light = st.session_state.get("light_mode", False)
     with st.container(key="theme_control"):
-        st.toggle(
-            "🌙 / ☀️",
-            key="light_mode",
-            help="Switch between dark and light mode.",
+        st.button(
+            "🌙" if light else "☀️",
+            key="theme_button",
+            help="Switch to dark mode" if light else "Switch to light mode",
+            on_click=_toggle_theme,
         )
 
 
