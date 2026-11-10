@@ -351,6 +351,15 @@ def _styles() -> None:
               box-shadow: 0 8px 24px #7585ab24;
             }
             [data-testid="stChatInput"] textarea { color: #263353; }
+            [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"],
+            [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p {
+              color: #253352;
+            }
+            [data-testid="stChatMessage"][aria-label*="user"] [data-testid="stMarkdownContainer"],
+            [data-testid="stChatMessage"][aria-label*="user"] [data-testid="stMarkdownContainer"] p,
+            [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) [data-testid="stMarkdownContainer"] p {
+              color: #fff;
+            }
             section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
             section[data-testid="stSidebar"] label,
             section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
