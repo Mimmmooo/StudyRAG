@@ -19,7 +19,7 @@ _STOPWORDS = {
 def _terms(text: str) -> list[str]:
     """Tokenize English and Bengali without matching unrelated substrings."""
     normalized = unicodedata.normalize("NFKC", text).casefold()
-    return re.findall(r"[\\w\\u0980-\\u09ff]+", normalized)
+    return re.findall(r"[\w\u0980-\u09ff]+", normalized)
 
 
 def _query_terms(text: str) -> list[str]:
