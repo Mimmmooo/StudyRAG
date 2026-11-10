@@ -223,10 +223,165 @@ def _styles() -> None:
             border-radius: 16px;
           }
         }
+
+        /* A quiet, compact start screen rather than a large dashboard card. */
+        .block-container { max-width: 900px; padding-top: 1.45rem; }
+        .sr-heading { max-width: 650px; margin: .3rem auto 1rem; text-align: center; }
+        .sr-heading h1 { font-size: clamp(1.65rem, 3vw, 2.15rem); margin-bottom: .42rem; }
+        .sr-heading p { font-size: .9rem; margin-bottom: .65rem; }
+        .sr-eyebrow { font-size: .66rem; margin-bottom: .45rem; }
+        .sr-welcome {
+          max-width: 580px;
+          margin: .7rem auto;
+          padding: 1.45rem 1.7rem;
+          border-radius: 19px;
+          background: linear-gradient(125deg, #1c2440, #151d32 67%, #242048);
+          background-size: 180% 180%;
+          box-shadow: 0 12px 40px rgba(2, 6, 20, .19);
+          animation: sr-enter .45s ease-out both, sr-gradient 16s ease-in-out infinite alternate;
+        }
+        .sr-welcome h2 { font-size: clamp(1.25rem, 2.5vw, 1.55rem); margin: .1rem 0 .35rem; }
+        .sr-welcome p { font-size: .88rem; line-height: 1.65; margin: 0; }
+        .sr-small { font-size: .74rem; margin-top: .75rem; }
+        @keyframes sr-enter {
+          from { opacity: 0; transform: translateY(7px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes sr-gradient {
+          from { background-position: 0% 40%; }
+          to { background-position: 100% 60%; }
+        }
+
+        /* Messenger-like conversations: assistant left, student right. */
+        [data-testid="stChatMessage"] {
+          width: fit-content;
+          max-width: min(82%, 690px);
+          margin: .45rem auto .45rem 0;
+          padding: .78rem 1.05rem;
+          border-radius: 18px 18px 18px 5px;
+          background: #19243c;
+          animation: sr-enter .2s ease-out both;
+          box-shadow: 0 5px 16px rgba(4, 8, 25, .13);
+        }
+        [data-testid="stChatMessage"][aria-label*="user"],
+        [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
+          margin-left: auto;
+          margin-right: 0;
+          border-radius: 18px 18px 5px 18px;
+          background: linear-gradient(135deg, #4c458f, #393878);
+          border-color: rgba(189, 182, 255, .22);
+        }
+        [data-testid="stChatMessage"] p {
+          font-size: .94rem;
+          line-height: 1.7;
+          overflow-wrap: anywhere;
+          margin: 0;
+        }
+        [data-testid="stChatMessage"] [data-testid="stChatMessageAvatar"] {
+          transform: scale(.85);
+        }
+        /* Hide Streamlit product chrome, but preserve the sidebar collapse control. */
+        [data-testid="stAppDeployButton"],
+        [data-testid="stToolbar"],
+        #MainMenu,
+        footer { display: none !important; }
+        @media (max-width: 700px) {
+          .block-container { padding: 1rem 1rem 6.7rem; }
+          .sr-heading { margin: .45rem auto .7rem; }
+          .sr-heading h1 { font-size: 1.62rem; }
+          .sr-welcome { padding: 1.2rem 1.1rem; border-radius: 16px; }
+          [data-testid="stChatMessage"] { max-width: 91%; padding: .68rem .8rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .sr-welcome, [data-testid="stChatMessage"] { animation: none !important; }
+        }
         </style>
         """,
         unsafe_allow_html=True,
     )
+    if st.session_state.get("light_mode", False):
+        st.markdown(
+            """
+            <style>
+            .stApp {
+              color: #1c2941;
+              background:
+                radial-gradient(ellipse 56% 35% at 50% -12%, #e8e0ff 0%, transparent 74%),
+                #f5f7fc;
+            }
+            section[data-testid="stSidebar"] {
+              background: #edf1fa;
+              border-right-color: #d4dced;
+            }
+            .sr-brand strong, .sr-heading h1, .sr-welcome h2, .sr-stat strong {
+              color: #1c2941;
+            }
+            .sr-label, .sr-welcome p, .sr-heading p { color: #435475; }
+            .sr-brand small, .sr-small { color: #627492; }
+            .sr-eyebrow { color: #6954b7; }
+            .sr-status, .sr-stat, [data-testid="stExpander"] {
+              color: #34415c;
+              background: #ffffffb8;
+              border-color: #d7dfee;
+            }
+            .sr-welcome {
+              border-color: #d7dafa;
+              background: linear-gradient(120deg, #ffffff, #f0edff 70%, #e6eaff);
+              background-size: 180% 180%;
+              box-shadow: 0 12px 35px #8490b123;
+            }
+            [data-testid="stChatMessage"] {
+              color: #253352;
+              background: #ffffff;
+              border-color: #dce3f1;
+              box-shadow: 0 5px 16px #7785a51c;
+            }
+            [data-testid="stChatMessage"][aria-label*="user"],
+            [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
+              color: #fff;
+              background: linear-gradient(125deg, #8270dd, #6659b8);
+            }
+            [data-testid="stChatMessage"][aria-label*="user"] p,
+            [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) p {
+              color: #fff;
+            }
+            [data-testid="stBottom"] [data-testid="stChatInput"] {
+              background: #ffffff;
+              border-color: #b6a9ed;
+              box-shadow: 0 8px 24px #7585ab24;
+            }
+            [data-testid="stChatInput"] textarea { color: #263353; }
+            [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"],
+            [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p {
+              color: #253352;
+            }
+            [data-testid="stChatMessage"][aria-label*="user"] [data-testid="stMarkdownContainer"],
+            [data-testid="stChatMessage"][aria-label*="user"] [data-testid="stMarkdownContainer"] p,
+            [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) [data-testid="stMarkdownContainer"] p {
+              color: #fff;
+            }
+            section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
+            section[data-testid="stSidebar"] label,
+            section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
+              color: #34415c;
+            }
+            section[data-testid="stSidebar"] [data-testid="stFileUploader"] {
+              background: #ffffff9c;
+              color: #34415c;
+            }
+            section[data-testid="stSidebar"] [data-testid="stFileUploader"] button,
+            section[data-testid="stSidebar"] div.stButton > button:not([kind="primary"]) {
+              background: #fff;
+              color: #34415c;
+              border-color: #cbd5e8;
+            }
+            section[data-testid="stSidebar"] [data-testid="stExpander"] {
+              background: #fff;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
 
 
 @st.cache_data(ttl=15, show_spinner=False)
@@ -250,6 +405,7 @@ def _sidebar(session: StudySession) -> int:
             '<div><strong>StudyRAG</strong><small>Your private study desk</small></div></div>',
             unsafe_allow_html=True,
         )
+        st.toggle("☀️ Light mode", key="light_mode", help="Switch between dark and light study themes.")
         model = escape(os.getenv("OLLAMA_MODEL", "qwen2.5:3b"))
         online = _ollama_online()
         state_class = "sr-online" if online else "sr-offline"
