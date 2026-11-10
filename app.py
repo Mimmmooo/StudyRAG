@@ -163,11 +163,32 @@ def _styles() -> None:
           background: #1a2036;
           border-color: rgba(162, 149, 237, .18);
         }
-        [data-testid="stChatInput"] {
-          border: 1px solid #5e59a3;
-          border-radius: 16px;
-          background: #151d30;
-          box-shadow: 0 4px 32px #070c20b8;
+        /* Keep the composer compact and horizontally centred, not full-width. */
+        [data-testid="stBottomBlockContainer"] {
+          width: min(100%, 640px);
+          max-width: 640px;
+          margin-inline: auto;
+        }
+        [data-testid="stBottom"] [data-testid="stChatInput"] {
+          width: 100%;
+          margin-inline: auto;
+          border: 1px solid rgba(160, 151, 247, .46);
+          border-radius: 20px;
+          background: linear-gradient(145deg, #19243b, #141d30);
+          box-shadow: 0 10px 34px rgba(4, 8, 23, .38);
+          transition: border-color .18s ease, box-shadow .18s ease;
+        }
+        [data-testid="stBottom"] [data-testid="stChatInput"]:focus-within {
+          border-color: #aa9cff;
+          box-shadow: 0 10px 36px rgba(6, 8, 27, .42),
+                      0 0 0 3px rgba(154, 136, 255, .13);
+        }
+        /* Streamlit's textarea grows naturally as the user types more lines. */
+        [data-testid="stChatInput"] textarea {
+          min-height: 24px;
+          max-height: 180px;
+          line-height: 1.55;
+          resize: none;
         }
         div.stButton > button {
           border-radius: 11px;
@@ -194,6 +215,13 @@ def _styles() -> None:
           .sr-welcome { padding: 2.1rem 1.35rem; }
           [data-testid="stChatMessage"] { padding: .85rem 1rem; }
           .sr-heading h1 { font-size: 2rem; }
+          [data-testid="stBottomBlockContainer"] {
+            width: 100%;
+            max-width: 100%;
+          }
+          [data-testid="stBottom"] [data-testid="stChatInput"] {
+            border-radius: 16px;
+          }
         }
         </style>
         """,
