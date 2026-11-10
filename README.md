@@ -10,7 +10,7 @@
 - Bengali and English **scanned PDF OCR** using Tesseract, with a local OCR cache to speed repeat indexing. Image-dominant pages are OCR'd even when a selectable page number or watermark is present.
 - Multilingual ONNX embeddings via FastEmbed and a temporary ChromaDB index per session.
 - Cached Bengali/English keyword-title retrieval alongside vector similarity. Complete-word matching avoids many accidental substring hits; no citation markers are required in chat.
-- Local Ollama-generated answers and follow-up questions with a simple chat interface.
+- Local Ollama-generated answers and follow-up questions in a clean, dark study-chat interface. Upload, indexing, New conversation and Clear library remain one click away; optional passage tuning is tucked into Advanced.
 - Optional Gemini/Groq providers, keyless source-excerpt mode, and session reset.
 - Python 3.11/3.12, Streamlit, pytest, Ruff and CI on Ubuntu, macOS and Windows.
 
@@ -63,8 +63,9 @@ The Windows launcher checks for Python, packages, Ollama, and Bengali/English OC
 ## Test with a real Bengali book
 
 1. Run the launcher. It ensures Ollama is reachable and `qwen2.5:3b` has been pulled.
+   The sidebar shows the local model status, and the chat opens once notes are indexed.
 2. The sidebar should default to **Ollama (local AI)**.
-3. Upload a scanned Bengali PDF, including a textbook such as `Secondary (BV)-2026_Class 8_Anondopath_compressed.pdf`, then click **Index selected files**.
+3. Upload a scanned Bengali PDF, including a textbook such as `Secondary (BV)-2026_Class 8_Anondopath_compressed.pdf`, then click **✦ Add to study library**.
 4. Check the indexed chunk count, then ask **কাকতাড়ুয়া গল্পের লেখক কে?**
 5. The expected author is **সত্যজিৎ রায়**. Check generated answers against your original book, especially when OCR quality is poor.
 
