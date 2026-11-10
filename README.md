@@ -9,7 +9,7 @@
 - PDF/TXT/MD upload (200 MiB per file; practical limit depends on your computer).
 - Bengali and English **scanned PDF OCR** using Tesseract, with a local OCR cache to speed repeat indexing. Image-dominant pages are OCR'd even when a selectable page number or watermark is present.
 - Multilingual ONNX embeddings via FastEmbed and a temporary ChromaDB index per session.
-- Bengali keyword/title retrieval alongside vector similarity, without citation markers in chat.
+- Cached Bengali/English keyword-title retrieval alongside vector similarity. Complete-word matching avoids many accidental substring hits; no citation markers are required in chat.
 - Local Ollama-generated answers and follow-up questions with a simple chat interface.
 - Optional Gemini/Groq providers, keyless source-excerpt mode, and session reset.
 - Python 3.11/3.12, Streamlit, pytest, Ruff and CI on Ubuntu, macOS and Windows.
@@ -119,6 +119,10 @@ On Windows use `.venv\Scripts\python.exe` instead. Ruff/pytest are developer too
 - PDF page numbers refer to physical pages of the uploaded PDF, which can differ from printed page numbers.
 - Index data is temporary for the browser session; original upload bytes are removed after indexing. OCR results are cached in `~/.cache/studyrag/ocr/` (or `STUDYRAG_OCR_CACHE_DIR`) to speed repeated uploads. Remove that folder if you want to erase cached extracted text. CLI ingestion uses the local `.chroma/` folder.
 - Automated CI and a manual local PDF/Ollama smoke test should pass before this branch is merged. Do not claim production-grade verification from an offline test alone.
+
+## Open-source research notes
+
+StudyRAG's search improvements were informed by established document-RAG approaches. See [GitHub RAG reference review](docs/GITHUB_RESEARCH.md) for the projects examined, trade-offs, and tests. No external code was copied.
 
 ## Project
 
