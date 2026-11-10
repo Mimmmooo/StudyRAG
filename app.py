@@ -224,6 +224,58 @@ def _styles() -> None:
           }
         }
 
+        /* Accessible animated theme switch: top-right of the app, never in sidebar. */
+        .st-key-theme_control {
+          position: fixed;
+          top: 1.15rem;
+          right: 1.6rem;
+          width: fit-content;
+          z-index: 999;
+          border: 1px solid rgba(175, 169, 248, .32);
+          border-radius: 999px;
+          padding: .25rem .75rem;
+          background: rgba(25, 34, 58, .92);
+          box-shadow: 0 8px 24px rgba(4, 8, 22, .25);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          transition: transform .22s ease, background .22s ease, border-color .22s ease;
+        }
+        .st-key-theme_control:hover {
+          transform: translateY(-2px);
+          border-color: #a99df9;
+        }
+        .st-key-theme_control [data-testid="stToggle"] {
+          margin: 0;
+        }
+        .st-key-theme_control [data-testid="stToggle"] label {
+          gap: .55rem;
+          cursor: pointer;
+          font-size: .84rem;
+          font-weight: 650;
+          color: #e4e8fa;
+          white-space: nowrap;
+        }
+        .st-key-theme_control [data-testid="stToggle"] [role="switch"] {
+          transition: background .25s ease, box-shadow .25s ease;
+        }
+        .st-key-theme_control [data-testid="stToggle"] [role="switch"]:focus-visible {
+          outline: 3px solid #b9aaff;
+          outline-offset: 3px;
+        }
+        @media (max-width: 700px) {
+          .st-key-theme_control {
+            top: .65rem;
+            right: .65rem;
+            padding: .16rem .48rem;
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .st-key-theme_control,
+          .st-key-theme_control [role="switch"] {
+            transition: none !important;
+          }
+          .st-key-theme_control:hover { transform: none; }
+        }
         /* A quiet, compact start screen rather than a large dashboard card. */
         .block-container { max-width: 900px; padding-top: 1.45rem; }
         .sr-heading { max-width: 650px; margin: .3rem auto 1rem; text-align: center; }
@@ -303,6 +355,14 @@ def _styles() -> None:
         st.markdown(
             """
             <style>
+            .st-key-theme_control {
+              background: rgba(255, 255, 255, .94);
+              border-color: #cdc8ed;
+              box-shadow: 0 8px 22px #8490b12b;
+            }
+            .st-key-theme_control [data-testid="stToggle"] label {
+              color: #394569;
+            }
             .stApp {
               color: #1c2941;
               background:
@@ -405,7 +465,6 @@ def _sidebar(session: StudySession) -> int:
             '<div><strong>StudyRAG</strong><small>Your private study desk</small></div></div>',
             unsafe_allow_html=True,
         )
-        st.toggle("☀️ Light mode", key="light_mode", help="Switch between dark and light study themes.")
         model = escape(os.getenv("OLLAMA_MODEL", "qwen2.5:3b"))
         online = _ollama_online()
         state_class = "sr-online" if online else "sr-offline"
@@ -530,6 +589,16 @@ def _render_welcome(has_files: bool) -> None:
     )
 
 
+def _theme_switch() -> None:
+    """Show a compact theme control in the upper-right app corner."""
+    with st.container(key="theme_control"):
+        st.toggle(
+            "🌙 / ☀️",
+            key="light_mode",
+            help="Switch between dark and light mode.",
+        )
+
+
 def main() -> None:
     """Render the upload workflow and grounded chat without business logic."""
     st.set_page_config(
@@ -543,6 +612,7 @@ def main() -> None:
     if "messages" not in st.session_state:
         st.session_state.messages = []
     top_k = _sidebar(session)
+    _theme_switch()
 
     st.markdown(
         '<div class="sr-heading"><div class="sr-eyebrow">FOCUS MODE</div>'
