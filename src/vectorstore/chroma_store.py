@@ -10,7 +10,6 @@ import chromadb
 
 from src.ingestion.chunker import TextChunk
 
-
 _STOPWORDS = {
     "গল্পের", "লেখক", "লেখকের", "কে", "কী", "কি", "হয়", "সম্পর্কে", "বলো",
     "what", "who", "the", "does", "where", "when", "which",
