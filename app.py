@@ -227,21 +227,23 @@ def _styles() -> None:
         /* Small, accessible sun/moon action in the upper-right corner. */
         .st-key-theme_control {
           position: fixed;
-          top: 1rem;
-          right: 1.45rem;
-          width: 48px;
+          top: .85rem;
+          right: 1.15rem;
+          width: 116px;
           z-index: 999;
         }
         .st-key-theme_control div.stButton > button {
-          width: 46px;
-          height: 46px;
-          min-height: 46px;
-          padding: 0;
-          border-radius: 50%;
+          width: 116px;
+          height: 41px;
+          min-height: 41px;
+          padding: 0 .7rem;
+          border-radius: 999px;
           border: 1px solid rgba(182, 168, 255, .42);
-          background: linear-gradient(145deg, #33345f, #1d2847);
-          color: #fdf4d4;
-          font-size: 1.2rem;
+          background: linear-gradient(135deg, #353862, #222e50);
+          color: #f8edff;
+          font-size: .83rem;
+          font-weight: 700;
+          letter-spacing: .01em;
           box-shadow: 0 8px 28px rgba(5, 9, 24, .3);
           backdrop-filter: blur(15px);
           -webkit-backdrop-filter: blur(15px);
@@ -249,21 +251,22 @@ def _styles() -> None:
                       background .22s ease, border-color .22s ease;
         }
         .st-key-theme_control div.stButton > button:hover {
-          transform: translateY(-2px) rotate(12deg);
+          transform: translateY(-2px);
           border-color: #bdadff;
-          background: linear-gradient(145deg, #4d4a8f, #29375c);
-          box-shadow: 0 10px 30px rgba(113, 92, 226, .25);
+          background: linear-gradient(135deg, #504c90, #384a78);
+          box-shadow: 0 12px 30px rgba(113, 92, 226, .27);
         }
         .st-key-theme_control div.stButton > button:focus-visible {
           outline: 3px solid #ad9bff;
           outline-offset: 3px;
         }
         @media (max-width: 700px) {
-          .st-key-theme_control { top: .6rem; right: .7rem; width: 42px; }
+          .st-key-theme_control { top: .5rem; right: .6rem; width: 102px; }
           .st-key-theme_control div.stButton > button {
-            width: 42px;
-            height: 42px;
-            min-height: 42px;
+            width: 102px;
+            height: 38px;
+            min-height: 38px;
+            font-size: .78rem;
           }
         }
         @media (prefers-reduced-motion: reduce) {
@@ -591,15 +594,18 @@ def _toggle_theme() -> None:
 
 
 def _theme_switch() -> None:
-    """Render a compact sun/moon action in the app's upper-right corner."""
+    """Toggle the complete color scheme and rerender immediately."""
     light = st.session_state.get("light_mode", False)
     with st.container(key="theme_control"):
-        st.button(
-            "🌙" if light else "☀️",
+        pressed = st.button(
+            "🌙  Dark" if light else "☀️  Light",
             key="theme_button",
             help="Switch to dark mode" if light else "Switch to light mode",
-            on_click=_toggle_theme,
+            use_container_width=True,
         )
+    if pressed:
+        _toggle_theme()
+        st.rerun()
 
 
 def main() -> None:
@@ -610,12 +616,13 @@ def main() -> None:
         layout="wide",
         initial_sidebar_state="expanded",
     )
+    # Handle the click before rendering CSS so light/dark styles update together.
+    _theme_switch()
     _styles()
     session = _session()
     if "messages" not in st.session_state:
         st.session_state.messages = []
     top_k = _sidebar(session)
-    _theme_switch()
 
     st.markdown(
         '<div class="sr-heading"><div class="sr-eyebrow">FOCUS MODE</div>'
