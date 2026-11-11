@@ -1,13 +1,13 @@
 """Regression tests for the theme switch and rendered color schemes."""
 
-from unittest.mock import Mock
+from unittest.mock import MagicMock
 
 import app
 
 
-def _fake_streamlit(monkeypatch, *, light: bool, clicked: bool) -> Mock:
+def _fake_streamlit(monkeypatch, *, light: bool, clicked: bool) -> MagicMock:
     """Create an in-memory Streamlit interface without opening a browser."""
-    fake = Mock()
+    fake = MagicMock()
     fake.session_state = {"light_mode": light}
     fake.button.return_value = clicked
     monkeypatch.setattr(app, "st", fake)
