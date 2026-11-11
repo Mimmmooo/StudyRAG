@@ -712,7 +712,7 @@ def _render_welcome(has_files: bool) -> None:
 
 def _toggle_theme() -> None:
     """Invert the current browser session's color mode."""
-    st.session_state.light_mode = not st.session_state.get("light_mode", False)
+    st.session_state["light_mode"] = not st.session_state.get("light_mode", False)
 
 
 def _theme_switch() -> None:
