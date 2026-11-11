@@ -344,6 +344,83 @@ def _styles() -> None:
         @media (prefers-reduced-motion: reduce) {
           .sr-welcome, [data-testid="stChatMessage"] { animation: none !important; }
         }
+        /* Final visual layer: glassy surfaces with measured motion. */
+        .stApp {
+          background:
+            radial-gradient(ellipse 60% 42% at 70% -16%, rgba(129, 101, 241, .22), transparent 82%),
+            radial-gradient(ellipse 48% 40% at 20% 110%, rgba(40, 102, 175, .10), transparent 75%),
+            #0b1020;
+          transition: background-color .28s ease, color .28s ease;
+        }
+        section[data-testid="stSidebar"] {
+          background: linear-gradient(170deg, #121b30 0%, #0e1628 90%);
+          box-shadow: 8px 0 32px rgba(3, 7, 20, .10);
+        }
+        .sr-brand { padding-top: .2rem; }
+        .sr-status, .sr-stat {
+          border-color: rgba(145, 164, 212, .21);
+          background: rgba(255, 255, 255, .035);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+        }
+        .sr-welcome {
+          border-color: rgba(170, 161, 251, .3);
+          background: linear-gradient(117deg, #1d2844, #181f39 52%, #24214c);
+          background-size: 190% 190%;
+          box-shadow: 0 18px 52px rgba(5, 8, 25, .24),
+                      inset 0 1px 0 rgba(255, 255, 255, .07);
+        }
+        [data-testid="stChatMessage"] {
+          border-color: rgba(151, 169, 221, .16);
+          background: linear-gradient(143deg, #192840, #152035);
+          box-shadow: 0 9px 25px rgba(4, 9, 24, .18);
+          transition: box-shadow .2s ease, border-color .2s ease;
+        }
+        [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
+          background: linear-gradient(130deg, #6551c2, #4a438f);
+          border-color: rgba(196, 185, 255, .24);
+        }
+        [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] {
+          max-width: 100%;
+        }
+        [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p,
+        [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] li {
+          overflow-wrap: anywhere;
+        }
+        [data-testid="stBottom"] {
+          background: transparent;
+        }
+        [data-testid="stBottom"] [data-testid="stChatInput"] {
+          border-radius: 19px;
+          background: rgba(24, 35, 59, .98);
+          box-shadow: 0 14px 38px rgba(2, 8, 25, .28);
+        }
+        div.stButton > button[kind="primary"] {
+          background: linear-gradient(110deg, #8a75f5, #6459d2 55%, #7561d9);
+          background-size: 180% 180%;
+          border-color: rgba(190, 176, 255, .45);
+          transition: transform .16s ease, box-shadow .16s ease, background-position .3s ease;
+        }
+        div.stButton > button[kind="primary"]:hover {
+          transform: translateY(-1px);
+          background-position: 95% 50%;
+          box-shadow: 0 8px 22px rgba(103, 84, 210, .26);
+        }
+        section[data-testid="stSidebar"] [data-testid="stFileUploader"] {
+          border: 1px dashed rgba(164, 158, 232, .36);
+          background: rgba(23, 31, 53, .52);
+          transition: border-color .2s ease, background .2s ease;
+        }
+        section[data-testid="stSidebar"] [data-testid="stFileUploader"]:hover {
+          border-color: rgba(185, 173, 255, .65);
+          background: rgba(42, 45, 80, .55);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .stApp, .sr-welcome, [data-testid="stChatMessage"],
+          div.stButton > button, [data-testid="stFileUploader"] {
+            animation: none !important;
+            transition: none !important;
+          }
+        }
         </style>
         """,
         unsafe_allow_html=True,
@@ -436,6 +513,51 @@ def _styles() -> None:
             }
             section[data-testid="stSidebar"] [data-testid="stExpander"] {
               background: #fff;
+            }
+            /* Keep all Streamlit surfaces in the chosen light palette. */
+            .stApp {
+              background:
+                radial-gradient(ellipse 58% 36% at 68% -15%, rgba(195, 180, 255, .48), transparent 80%),
+                radial-gradient(ellipse 50% 30% at 18% 110%, rgba(197, 215, 253, .5), transparent 85%),
+                #f6f8fd;
+              color: #24314a;
+            }
+            section[data-testid="stSidebar"] {
+              background: linear-gradient(165deg, #f5f6ff, #e9eef9 98%);
+              box-shadow: 8px 0 30px #7989ab0c;
+            }
+            .sr-brand strong, .sr-heading h1, .sr-welcome h2,
+            .sr-stat strong, .sr-status strong { color: #202b45; }
+            .sr-welcome {
+              background: linear-gradient(115deg, #ffffff, #f2efff 55%, #e8ecfe);
+              background-size: 190% 190%;
+              box-shadow: 0 18px 45px #7989ab20, inset 0 1px 0 #ffffff;
+            }
+            .sr-status, .sr-stat { color: #3a4b6b; background: #ffffffb3; }
+            [data-testid="stChatMessage"] {
+              background: #ffffff;
+              border-color: #dce3f2;
+              box-shadow: 0 10px 25px #7283a31c;
+            }
+            [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
+              background: linear-gradient(130deg, #8370df, #695cb9);
+              border-color: #aea0eb;
+            }
+            [data-testid="stBottom"] [data-testid="stChatInput"] {
+              background: #ffffff;
+              border-color: #aaa0e4;
+            }
+            section[data-testid="stSidebar"] [data-testid="stFileUploader"] {
+              background: #ffffffbc;
+              border-color: #c7bee8;
+            }
+            section[data-testid="stSidebar"] [data-testid="stFileUploader"]:hover {
+              background: #fff;
+              border-color: #aa96e3;
+            }
+            [data-testid="stBottom"] textarea,
+            [data-testid="stBottom"] textarea::placeholder {
+              color: #334360;
             }
             </style>
             """,
