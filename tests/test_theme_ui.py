@@ -62,3 +62,23 @@ def test_dark_theme_does_not_include_light_overrides(monkeypatch) -> None:
     css = fake.markdown.call_args.args[0]
     assert "#0b1020" in css
     assert "#f6f8fd" not in css
+
+
+def test_native_sidebar_controls_remain_visible(monkeypatch) -> None:
+    """Do not hide the built-in collapse and reopen buttons with toolbar CSS."""
+    fake = _fake_streamlit(monkeypatch, light=False, clicked=False)
+    app._styles()
+    css = fake.markdown.call_args.args[0]
+    assert '[data-testid="stSidebarCollapsedControl"]' in css
+    assert '[data-testid="stSidebarCollapseButton"]' in css
+    assert '[data-testid="stToolbar"],' not in css
+    assert '[data-testid="stAppDeployButton"]' in css
+
+
+def test_sidebar_toggle_supports_light_theme(monkeypatch) -> None:
+    """Sidebar controls have light-mode colors as well as dark-mode colors."""
+    fake = _fake_streamlit(monkeypatch, light=True, clicked=False)
+    app._styles()
+    light_css = fake.markdown.call_args_list[-1].args[0]
+    assert '[data-testid="stSidebarCollapsedControl"] button' in light_css
+    assert '[data-testid="stSidebarCollapseButton"] button' in light_css
