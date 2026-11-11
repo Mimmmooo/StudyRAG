@@ -329,17 +329,66 @@ def _styles() -> None:
         [data-testid="stChatMessage"] [data-testid="stChatMessageAvatar"] {
           transform: scale(.85);
         }
-        /* Hide Streamlit product chrome, but preserve the sidebar collapse control. */
+        /* Hide deployment clutter without hiding the built-in sidebar controls. */
         [data-testid="stAppDeployButton"],
-        [data-testid="stToolbar"],
+        [data-testid="stMainMenu"],
         #MainMenu,
         footer { display: none !important; }
+
+        /* Native Streamlit sidebar buttons work in both directions. */
+        [data-testid="stSidebarCollapsedControl"] {
+          display: flex !important;
+          position: fixed !important;
+          top: .92rem !important;
+          left: .85rem !important;
+          right: auto !important;
+          z-index: 1002 !important;
+        }
+        [data-testid="stSidebarCollapsedControl"] button {
+          display: inline-flex !important;
+          align-items: center;
+          justify-content: center;
+          width: 42px;
+          height: 42px;
+          border-radius: 13px;
+          border: 1px solid rgba(171, 159, 241, .33);
+          background: rgba(30, 39, 64, .95);
+          color: #f0edff;
+          box-shadow: 0 6px 20px rgba(0, 0, 0, .18);
+          cursor: pointer;
+          transition: background .2s ease, transform .2s ease;
+        }
+        [data-testid="stSidebarCollapsedControl"] button:hover {
+          background: #393868;
+          transform: translateY(-1px);
+        }
+        [data-testid="stSidebarCollapseButton"] {
+          display: flex !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+          z-index: 1002 !important;
+        }
+        [data-testid="stSidebarCollapseButton"] button {
+          border: 1px solid rgba(171, 159, 241, .3);
+          background: rgba(30, 39, 64, .9);
+          border-radius: 11px;
+          min-width: 36px;
+          min-height: 36px;
+          transition: background .2s ease;
+        }
+        [data-testid="stSidebarCollapseButton"] button:hover {
+          background: #393868;
+        }
         @media (max-width: 700px) {
           .block-container { padding: 1rem 1rem 6.7rem; }
           .sr-heading { margin: .45rem auto .7rem; }
           .sr-heading h1 { font-size: 1.62rem; }
           .sr-welcome { padding: 1.2rem 1.1rem; border-radius: 16px; }
           [data-testid="stChatMessage"] { max-width: 91%; padding: .68rem .8rem; }
+          [data-testid="stSidebarCollapsedControl"] {
+            top: .55rem !important;
+            left: .5rem !important;
+          }
         }
         @media (prefers-reduced-motion: reduce) {
           .sr-welcome, [data-testid="stChatMessage"] { animation: none !important; }
@@ -513,6 +562,17 @@ def _styles() -> None:
             }
             section[data-testid="stSidebar"] [data-testid="stExpander"] {
               background: #fff;
+            }
+            [data-testid="stSidebarCollapsedControl"] button,
+            [data-testid="stSidebarCollapseButton"] button {
+              background: rgba(255, 255, 255, .96);
+              border-color: #d2c9ee;
+              color: #3c3f6a;
+              box-shadow: 0 6px 18px #6a7a9d22;
+            }
+            [data-testid="stSidebarCollapsedControl"] button:hover,
+            [data-testid="stSidebarCollapseButton"] button:hover {
+              background: #ece8ff;
             }
             /* Keep all Streamlit surfaces in the chosen light palette. */
             .stApp {
