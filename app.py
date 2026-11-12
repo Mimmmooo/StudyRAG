@@ -241,8 +241,9 @@ def _styles() -> None:
           -webkit-backdrop-filter: blur(18px);
           transition: background .25s ease, border-color .25s ease;
         }
+        /* Leave space so the bottom dock never covers the last settings. */
         section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
-          padding-bottom: 1.1rem;
+          padding-bottom: 7.5rem;
         }
         section[data-testid="stSidebar"] .st-key-theme_dock > div > [data-testid="stMarkdown"] {
           margin: 0;
