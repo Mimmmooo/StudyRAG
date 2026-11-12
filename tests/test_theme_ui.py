@@ -25,8 +25,8 @@ def test_theme_is_compact_segmented_control(monkeypatch) -> None:
     assert args.kwargs["default"] == "moon"
     assert args.kwargs["key"] == "theme_choice"
     assert args.kwargs["label_visibility"] == "collapsed"
-    assert args.kwargs["format_func"]("sun") == "☀️"
-    assert args.kwargs["format_func"]("moon") == "🌙"
+    assert args.kwargs["format_func"]("sun") == "☼"
+    assert args.kwargs["format_func"]("moon") == "☾"
     fake.columns.assert_not_called()
     fake.toggle.assert_not_called()
 
