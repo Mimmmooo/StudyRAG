@@ -9,57 +9,52 @@ def _fake_streamlit(monkeypatch, *, light: bool) -> MagicMock:
     """Create a mock Streamlit UI with the selected session theme."""
     fake = MagicMock()
     fake.session_state = {"light_mode": light}
-    fake.columns.return_value = (MagicMock(), MagicMock(), MagicMock())
+    fake.columns.return_value = (MagicMock(), MagicMock())
     monkeypatch.setattr(app, "st", fake)
     return fake
 
 
-def test_theme_is_compact_segmented_control(monkeypatch) -> None:
-    """Sun and moon remain the only two options; no huge appearance panel."""
+def test_theme_uses_two_full_width_buttons(monkeypatch) -> None:
+    """Sun and moon actions occupy equal halves of one compact pill."""
     fake = _fake_streamlit(monkeypatch, light=False)
     app._theme_switch()
-    fake.container.assert_called_once_with(key="theme_dock")
-    fake.segmented_control.assert_called_once()
-    args = fake.segmented_control.call_args
-    assert args.kwargs["options"] == ["sun", "moon"]
-    assert args.kwargs["default"] == "moon"
-    assert args.kwargs["key"] == "theme_choice"
-    assert args.kwargs["label_visibility"] == "collapsed"
-    assert args.kwargs["format_func"]("sun") == "☼"
-    assert args.kwargs["format_func"]("moon") == "☾"
-    fake.columns.assert_not_called()
-    fake.toggle.assert_not_called()
+    fake.container.assert_any_call(key="theme_dock")
+    fake.columns.assert_called_once_with(2, gap="small")
+    assert fake.button.call_count == 2
+    labels = [call.args[0] for call in fake.button.call_args_list]
+    assert labels == ["☼", "☾"]
+    assert all(call.kwargs["use_container_width"] for call in fake.button.call_args_list)
+    fake.segmented_control.assert_not_called()
 
 
-def test_theme_change_callback_updates_light_mode(monkeypatch) -> None:
-    """Clicking either segment changes the actual theme state."""
+def test_theme_callbacks_change_session_state(monkeypatch) -> None:
+    """Both icon buttons set the chosen mode without clearing notes."""
     fake = _fake_streamlit(monkeypatch, light=False)
-    fake.session_state["theme_choice"] = "sun"
-    app._theme_changed()
+    fake.session_state["messages"] = [{"role": "user", "content": "hello"}]
+    app._set_theme(True)
     assert fake.session_state["light_mode"] is True
-    fake.session_state["theme_choice"] = "moon"
-    app._theme_changed()
+    app._set_theme(False)
     assert fake.session_state["light_mode"] is False
+    assert fake.session_state["messages"][0]["content"] == "hello"
 
 
-def test_theme_switch_defaults_to_selected_light_mode(monkeypatch) -> None:
-    """A rerender keeps light mode selected without overwriting chat."""
+def test_active_half_is_selected(monkeypatch) -> None:
+    """Active sun or moon gets its own CSS class."""
     fake = _fake_streamlit(monkeypatch, light=True)
     app._theme_switch()
-    assert fake.segmented_control.call_args.kwargs["default"] == "sun"
-    assert fake.session_state["light_mode"] is True
+    fake.container.assert_any_call(key="theme_sun_active")
+    fake.container.assert_any_call(key="theme_moon")
 
 
-def test_theme_dock_is_small_not_oversized(monkeypatch) -> None:
-    """Appearance UI should be a compact pill fixed to the sidebar bottom."""
+def test_theme_dock_has_no_empty_space(monkeypatch) -> None:
+    """Height is explicitly capped to one row of two buttons."""
     fake = _fake_streamlit(monkeypatch, light=False)
     app._styles()
     css = fake.markdown.call_args.args[0]
     assert 'section[data-testid="stSidebar"] .st-key-theme_dock' in css
-    assert "width: 132px;" in css
-    assert "height: 54px;" in css
-    assert "max-height: 54px;" in css
-    assert "bottom: 18px;" in css
+    assert "width: 126px !important;" in css
+    assert "max-height: 52px;" in css
+    assert ".st-key-theme_sun_active button" in css
     assert ".sr-theme-label" not in css
 
 
@@ -72,7 +67,7 @@ def test_light_theme_injects_light_chat_and_sidebar_styles(monkeypatch) -> None:
     assert "#ffffff" in css
     assert 'section[data-testid="stSidebar"]' in css
     assert 'data-testid="stChatMessage"' in css
-    assert '[data-testid="stSegmentedControl"] button[aria-pressed="true"]' in css
+    assert ".st-key-theme_sun_active button" in css
 
 
 def test_dark_theme_does_not_include_light_overrides(monkeypatch) -> None:
