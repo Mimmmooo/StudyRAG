@@ -9,6 +9,7 @@ def _fake_streamlit(monkeypatch, *, light: bool) -> MagicMock:
     """Create a mock Streamlit UI with the selected session theme."""
     fake = MagicMock()
     fake.session_state = {"light_mode": light}
+    fake.columns.return_value = (MagicMock(), MagicMock(), MagicMock())
     monkeypatch.setattr(app, "st", fake)
     return fake
 
