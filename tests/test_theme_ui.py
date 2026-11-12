@@ -14,38 +14,53 @@ def _fake_streamlit(monkeypatch, *, light: bool) -> MagicMock:
     return fake
 
 
-def test_theme_switch_is_a_native_stateful_sidebar_toggle(monkeypatch) -> None:
-    """A keyed Streamlit toggle reruns itself and persists the selected theme."""
+def test_theme_is_compact_segmented_control(monkeypatch) -> None:
+    """Sun and moon remain the only two options; no huge appearance panel."""
     fake = _fake_streamlit(monkeypatch, light=False)
     app._theme_switch()
     fake.container.assert_called_once_with(key="theme_dock")
-    fake.columns.assert_called_once_with([1, 2, 1], gap="small")
-    fake.toggle.assert_called_once()
-    assert fake.toggle.call_args.kwargs["key"] == "light_mode"
-    assert fake.toggle.call_args.kwargs["label_visibility"] == "collapsed"
-    fake.rerun.assert_not_called()
-    fake.button.assert_not_called()
+    fake.segmented_control.assert_called_once()
+    args = fake.segmented_control.call_args
+    assert args.kwargs["options"] == ["sun", "moon"]
+    assert args.kwargs["default"] == "moon"
+    assert args.kwargs["key"] == "theme_choice"
+    assert args.kwargs["label_visibility"] == "collapsed"
+    assert args.kwargs["format_func"]("sun") == "☼"
+    assert args.kwargs["format_func"]("moon") == "☾"
+    fake.columns.assert_not_called()
+    fake.toggle.assert_not_called()
 
 
-def test_theme_control_keeps_light_mode_selection(monkeypatch) -> None:
-    """A normal rerender must not reset the user's appearance choice."""
+def test_theme_change_callback_updates_light_mode(monkeypatch) -> None:
+    """Clicking either segment changes the actual theme state."""
+    fake = _fake_streamlit(monkeypatch, light=False)
+    fake.session_state["theme_choice"] = "sun"
+    app._theme_changed()
+    assert fake.session_state["light_mode"] is True
+    fake.session_state["theme_choice"] = "moon"
+    app._theme_changed()
+    assert fake.session_state["light_mode"] is False
+
+
+def test_theme_switch_defaults_to_selected_light_mode(monkeypatch) -> None:
+    """A rerender keeps light mode selected without overwriting chat."""
     fake = _fake_streamlit(monkeypatch, light=True)
     app._theme_switch()
+    assert fake.segmented_control.call_args.kwargs["default"] == "sun"
     assert fake.session_state["light_mode"] is True
-    html = " ".join(call.args[0] for call in fake.markdown.call_args_list)
-    assert "☀️" in html
-    assert "🌙" in html
 
 
-def test_theme_dock_is_bottom_left_not_top_right(monkeypatch) -> None:
-    """The appearance dock must not overlap Streamlit's top-right Stop button."""
+def test_theme_dock_is_small_not_oversized(monkeypatch) -> None:
+    """Appearance UI should be a compact pill fixed to the sidebar bottom."""
     fake = _fake_streamlit(monkeypatch, light=False)
     app._styles()
     css = fake.markdown.call_args.args[0]
-    assert "section[data-testid=\"stSidebar\"] .st-key-theme_dock" in css
-    assert "bottom: 16px;" in css
-    assert "left: 16px;" in css
-    assert ".st-key-theme_control" not in css
+    assert 'section[data-testid="stSidebar"] .st-key-theme_dock' in css
+    assert "width: 132px;" in css
+    assert "height: 54px;" in css
+    assert "max-height: 54px;" in css
+    assert "bottom: 18px;" in css
+    assert ".sr-theme-label" not in css
 
 
 def test_light_theme_injects_light_chat_and_sidebar_styles(monkeypatch) -> None:
@@ -57,7 +72,7 @@ def test_light_theme_injects_light_chat_and_sidebar_styles(monkeypatch) -> None:
     assert "#ffffff" in css
     assert 'section[data-testid="stSidebar"]' in css
     assert 'data-testid="stChatMessage"' in css
-    assert ".sr-theme-label { color: #536587; }" in css
+    assert '[data-testid="stSegmentedControl"] button[aria-pressed="true"]' in css
 
 
 def test_dark_theme_does_not_include_light_overrides(monkeypatch) -> None:
