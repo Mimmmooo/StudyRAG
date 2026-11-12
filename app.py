@@ -224,74 +224,79 @@ def _styles() -> None:
           }
         }
 
-        /* Appearance dock belongs to the sidebar, never the top toolbar. */
+        /* Small, two-option theme control inspired by a modern segmented switch. */
         section[data-testid="stSidebar"] .st-key-theme_dock {
           position: fixed;
-          bottom: 16px;
-          left: 16px;
-          width: 268px;
-          max-width: calc(100vw - 32px);
-          z-index: 20;
-          padding: .75rem .85rem;
-          background: linear-gradient(135deg, #202c4a, #19223b);
-          border: 1px solid rgba(179, 163, 250, .25);
-          border-radius: 16px;
-          box-shadow: 0 12px 32px rgba(4, 8, 22, .24);
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
-          transition: background .25s ease, border-color .25s ease;
+          bottom: 18px;
+          left: 24px;
+          width: 132px;
+          height: 54px;
+          max-height: 54px;
+          z-index: 25;
+          padding: 5px;
+          border-radius: 30px;
+          background: #0a1020;
+          border: 1px solid rgba(181, 172, 246, .26);
+          box-shadow: 0 10px 26px rgba(2, 5, 18, .32);
+          overflow: hidden;
         }
-        /* Leave space so the bottom dock never covers the last settings. */
-        section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
-          padding-bottom: 7.5rem;
-        }
-        section[data-testid="stSidebar"] .st-key-theme_dock > div > [data-testid="stMarkdown"] {
+        section[data-testid="stSidebar"] .st-key-theme_dock
+          [data-testid="stSegmentedControl"] {
           margin: 0;
-        }
-        .sr-theme-label {
-          font-size: .68rem;
-          font-weight: 750;
-          letter-spacing: .1em;
-          color: #a6b6d4;
-          margin: 0 0 .45rem;
-        }
-        .sr-theme-icon {
-          text-align: center;
-          line-height: 2rem;
-          font-size: 1.12rem;
-          user-select: none;
-        }
-        section[data-testid="stSidebar"] .st-key-theme_dock [data-testid="stToggle"] {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 2rem;
           padding: 0;
         }
-        section[data-testid="stSidebar"] .st-key-theme_dock [role="switch"] {
-          transition: transform .25s ease, background-color .25s ease,
-                      box-shadow .25s ease;
-          box-shadow: 0 0 0 3px rgba(154, 136, 255, .08);
+        section[data-testid="stSidebar"] .st-key-theme_dock
+          [data-testid="stSegmentedControl"] > div {
+          background: transparent;
+          border: 0;
+          box-shadow: none;
+          gap: 4px;
         }
-        section[data-testid="stSidebar"] .st-key-theme_dock [role="switch"]:focus-visible {
-          outline: 3px solid #bcafff;
-          outline-offset: 4px;
+        section[data-testid="stSidebar"] .st-key-theme_dock
+          [data-testid="stSegmentedControl"] button {
+          width: 55px;
+          min-width: 55px;
+          height: 42px;
+          min-height: 42px;
+          padding: 0;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border: none;
+          border-radius: 24px;
+          font-size: 1.2rem;
+          background: transparent;
+          color: #9fa8c4;
+          transition: background .22s ease, color .22s ease, transform .22s ease;
         }
-        .sr-section-divider {
-          border-top: 1px solid rgba(155, 169, 210, .16);
-          margin: .65rem 0 .4rem;
+        section[data-testid="stSidebar"] .st-key-theme_dock
+          [data-testid="stSegmentedControl"] button[aria-pressed="true"] {
+          background: #303b63;
+          color: #fff;
+          box-shadow: 0 3px 12px rgba(0, 0, 0, .18);
+        }
+        section[data-testid="stSidebar"] .st-key-theme_dock
+          [data-testid="stSegmentedControl"] button:hover {
+          transform: translateY(-1px);
+        }
+        section[data-testid="stSidebar"] .st-key-theme_dock button:focus-visible {
+          outline: 2px solid #b7a5ff;
+          outline-offset: 2px;
+        }
+        /* Reserve only one short control row at the bottom of the sidebar. */
+        section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+          padding-bottom: 4.3rem;
         }
         @media (max-width: 700px) {
           section[data-testid="stSidebar"] .st-key-theme_dock {
             bottom: 10px;
-            left: 10px;
-            width: min(268px, calc(100vw - 20px));
+            left: 12px;
           }
         }
         @media (prefers-reduced-motion: reduce) {
-          section[data-testid="stSidebar"] .st-key-theme_dock,
-          section[data-testid="stSidebar"] .st-key-theme_dock [role="switch"] {
+          section[data-testid="stSidebar"] .st-key-theme_dock button {
             transition: none !important;
+            transform: none !important;
           }
         }
         /* A quiet, compact start screen rather than a large dashboard card. */
@@ -500,11 +505,16 @@ def _styles() -> None:
             """
             <style>
             section[data-testid="stSidebar"] .st-key-theme_dock {
-              background: linear-gradient(135deg, #ffffff, #eeeaff);
-              border-color: #d5cbf2;
-              box-shadow: 0 10px 28px #6778a326;
+              background: #edf1fa;
+              border-color: #d4dcef;
+              box-shadow: 0 8px 22px #7784a425;
             }
-            .sr-theme-label { color: #536587; }
+            section[data-testid="stSidebar"] .st-key-theme_dock
+              [data-testid="stSegmentedControl"] button[aria-pressed="true"] {
+              background: #ffffff;
+              color: #3a4169;
+              box-shadow: 0 3px 12px #818daa29;
+            }
             .stApp {
               color: #1c2941;
               background:
@@ -673,8 +683,6 @@ def _sidebar(session: StudySession) -> int:
             unsafe_allow_html=True,
         )
 
-        st.markdown('<div class="sr-section-divider"></div>', unsafe_allow_html=True)
-        st.markdown('<div class="sr-label">📂  DOCUMENTS</div>', unsafe_allow_html=True)
         uploads = st.file_uploader(
             "Choose notes",
             type=["pdf", "txt", "md"],
@@ -712,8 +720,6 @@ def _sidebar(session: StudySession) -> int:
                 for filename in session.files:
                     st.text(filename)
 
-        st.markdown('<div class="sr-section-divider"></div>', unsafe_allow_html=True)
-        st.markdown('<div class="sr-label">💬  CONVERSATIONS</div>', unsafe_allow_html=True)
         if st.button(
             "＋  New conversation",
             use_container_width=True,
@@ -740,7 +746,6 @@ def _sidebar(session: StudySession) -> int:
                 st.session_state.confirm_clear = False
                 st.rerun()
 
-        st.markdown('<div class="sr-section-divider"></div>', unsafe_allow_html=True)
         with st.expander("⚙️  Settings", expanded=False):
             top_k = st.slider(
                 "Passages to retrieve",
@@ -791,25 +796,24 @@ def _render_welcome(has_files: bool) -> None:
     )
 
 
+def _theme_changed() -> None:
+    """Apply the chosen appearance without resetting chat or uploaded notes."""
+    st.session_state["light_mode"] = st.session_state["theme_choice"] == "sun"
+
+
 def _theme_switch() -> None:
-    """Use Streamlit's stateful switch in the bottom-left sidebar dock."""
+    """Render a small sun/moon segmented switch in the sidebar's lower-left."""
+    selected = "sun" if st.session_state.get("light_mode", False) else "moon"
     with st.container(key="theme_dock"):
-        st.markdown(
-            '<div class="sr-theme-label">APPEARANCE</div>',
-            unsafe_allow_html=True,
+        st.segmented_control(
+            "Appearance",
+            options=["sun", "moon"],
+            default=selected,
+            format_func=lambda mode: "☀️" if mode == "sun" else "🌙",
+            key="theme_choice",
+            on_change=_theme_changed,
+            label_visibility="collapsed",
         )
-        sun, toggle, moon = st.columns([1, 2, 1], gap="small")
-        with sun:
-            st.markdown('<div class="sr-theme-icon">☀️</div>', unsafe_allow_html=True)
-        with toggle:
-            st.toggle(
-                "Light mode",
-                key="light_mode",
-                label_visibility="collapsed",
-                help="Switch between dark and light mode",
-            )
-        with moon:
-            st.markdown('<div class="sr-theme-icon">🌙</div>', unsafe_allow_html=True)
 
 
 def main() -> None:
