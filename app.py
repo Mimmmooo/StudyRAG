@@ -809,7 +809,7 @@ def _theme_switch() -> None:
             "Appearance",
             options=["sun", "moon"],
             default=selected,
-            format_func=lambda mode: "☀️" if mode == "sun" else "🌙",
+            format_func=lambda mode: "☼" if mode == "sun" else "☾",
             key="theme_choice",
             on_change=_theme_changed,
             label_visibility="collapsed",
