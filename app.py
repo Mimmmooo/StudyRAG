@@ -229,7 +229,7 @@ def _styles() -> None:
           min-height: 100%;
         }
         section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"]
-          [data-testid="stVerticalBlock"]:first-child {
+          > div > [data-testid="stVerticalBlock"] {
           min-height: calc(100vh - 4rem);
         }
         section[data-testid="stSidebar"] .st-key-theme_control {
@@ -665,7 +665,11 @@ def _sidebar(session: StudySession) -> int:
             unsafe_allow_html=True,
         )
 
-        st.markdown('<div class="sr-label">YOUR DOCUMENTS</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sr-section">📂 Documents</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="sr-help">PDF · TXT · MD · Bengali OCR supported</div>',
+            unsafe_allow_html=True,
+        )
         uploads = st.file_uploader(
             "Choose notes",
             type=["pdf", "txt", "md"],
@@ -674,7 +678,7 @@ def _sidebar(session: StudySession) -> int:
             help=f"PDF, TXT or Markdown, up to {MAX_UPLOAD_MB} MB each.",
         )
         if st.button(
-            "✦  Add to study library",
+            "✦  Index selected notes",
             type="primary",
             disabled=not uploads,
             use_container_width=True,
@@ -703,16 +707,16 @@ def _sidebar(session: StudySession) -> int:
                 for filename in session.files:
                     st.text(filename)
 
-        st.markdown('<div class="sr-label">CHAT</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sr-section">💬 Conversation</div>', unsafe_allow_html=True)
         if st.button(
-            "＋  New conversation",
+            "✏️  New conversation",
             use_container_width=True,
             disabled=not bool(st.session_state.get("messages")),
         ):
             st.session_state.messages = []
             st.rerun()
         if st.button(
-            "⌫  Clear library & chat",
+            "🗑️  Clear library & chat",
             use_container_width=True,
             disabled=not bool(session.files),
         ):
@@ -730,7 +734,7 @@ def _sidebar(session: StudySession) -> int:
                 st.session_state.confirm_clear = False
                 st.rerun()
 
-        with st.expander("⚙  Advanced", expanded=False):
+        with st.expander("⚙️  Retrieval settings", expanded=False):
             top_k = st.slider(
                 "Passages to retrieve",
                 min_value=1,
