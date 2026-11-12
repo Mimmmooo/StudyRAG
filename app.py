@@ -224,54 +224,64 @@ def _styles() -> None:
           }
         }
 
-        /* Small, accessible sun/moon action in the upper-right corner. */
-        .st-key-theme_control {
-          position: fixed;
-          top: .85rem;
-          right: 1.15rem;
-          width: 116px;
-          z-index: 999;
+        /* Compact sidebar footer switch, never overlapping Streamlit's spinner. */
+        section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {
+          min-height: 100%;
         }
-        .st-key-theme_control div.stButton > button {
-          width: 116px;
-          height: 41px;
-          min-height: 41px;
-          padding: 0 .7rem;
-          border-radius: 999px;
-          border: 1px solid rgba(182, 168, 255, .42);
-          background: linear-gradient(135deg, #353862, #222e50);
-          color: #f8edff;
-          font-size: .83rem;
-          font-weight: 700;
-          letter-spacing: .01em;
-          box-shadow: 0 8px 28px rgba(5, 9, 24, .3);
-          backdrop-filter: blur(15px);
-          -webkit-backdrop-filter: blur(15px);
-          transition: transform .22s ease, box-shadow .22s ease,
-                      background .22s ease, border-color .22s ease;
+        section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"]
+          [data-testid="stVerticalBlock"]:first-child {
+          min-height: calc(100vh - 4rem);
         }
-        .st-key-theme_control div.stButton > button:hover {
-          transform: translateY(-2px);
-          border-color: #bdadff;
-          background: linear-gradient(135deg, #504c90, #384a78);
-          box-shadow: 0 12px 30px rgba(113, 92, 226, .27);
+        section[data-testid="stSidebar"] .st-key-theme_control {
+          position: sticky;
+          bottom: .75rem;
+          z-index: 3;
+          margin-top: auto;
+          padding: .55rem .75rem;
+          border-radius: 16px;
+          border: 1px solid rgba(167, 158, 227, .23);
+          background: rgba(22, 31, 54, .96);
+          box-shadow: 0 7px 24px rgba(6, 12, 29, .16);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
         }
-        .st-key-theme_control div.stButton > button:focus-visible {
-          outline: 3px solid #ad9bff;
+        section[data-testid="stSidebar"] .st-key-theme_control
+          [data-testid="stToggle"] label {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: .6rem;
+          width: 100%;
+          cursor: pointer;
+          color: #f8eabc;
+          font-size: .93rem;
+          font-weight: 650;
+        }
+        section[data-testid="stSidebar"] .st-key-theme_control
+          [data-testid="stToggle"] [role="switch"] {
+          transition: background .23s ease, box-shadow .23s ease;
+          box-shadow: 0 2px 10px rgba(99, 76, 220, .13);
+        }
+        section[data-testid="stSidebar"] .st-key-theme_control
+          [data-testid="stToggle"] [role="switch"]:focus-visible {
+          outline: 3px solid #bcb0ff;
           outline-offset: 3px;
         }
-        @media (max-width: 700px) {
-          .st-key-theme_control { top: .5rem; right: .6rem; width: 102px; }
-          .st-key-theme_control div.stButton > button {
-            width: 102px;
-            height: 38px;
-            min-height: 38px;
-            font-size: .78rem;
-          }
+        .sr-section {
+          font-size: .72rem;
+          font-weight: 750;
+          text-transform: uppercase;
+          letter-spacing: .09em;
+          color: #bfb5ff;
+          margin: .95rem 0 .15rem;
+          border-top: 1px solid rgba(158, 167, 219, .14);
+          padding-top: .8rem;
         }
-        @media (prefers-reduced-motion: reduce) {
-          .st-key-theme_control div.stButton > button { transition: none !important; }
-          .st-key-theme_control div.stButton > button:hover { transform: none; }
+        .sr-help {
+          font-size: .72rem;
+          color: #94a6c9;
+          line-height: 1.5;
+          margin: -.2rem 0 .35rem;
         }
         /* A quiet, compact start screen rather than a large dashboard card. */
         .block-container { max-width: 900px; padding-top: 1.45rem; }
@@ -478,16 +488,15 @@ def _styles() -> None:
         st.markdown(
             """
             <style>
-            .st-key-theme_control div.stButton > button {
-              color: #4a3f82;
-              background: linear-gradient(145deg, #ffffff, #e8e3fb);
-              border-color: #c9c0ef;
-              box-shadow: 0 7px 22px #6577a326;
+            section[data-testid="stSidebar"] .st-key-theme_control {
+              background: rgba(255, 255, 255, .95);
+              border-color: #d8d0f0;
+              box-shadow: 0 7px 22px #7183aa24;
             }
-            .st-key-theme_control div.stButton > button:hover {
-              background: linear-gradient(145deg, #f9f6ff, #dcd4fc);
-              border-color: #a99be3;
-            }
+            section[data-testid="stSidebar"] .st-key-theme_control
+              [data-testid="stToggle"] label { color: #6554aa; }
+            .sr-section { color: #705bb5; border-top-color: #d8dfea; }
+            .sr-help { color: #64748e; }
             .stApp {
               color: #1c2941;
               background:
@@ -734,6 +743,11 @@ def _sidebar(session: StudySession) -> int:
             )
         if not online:
             st.caption("Launch Ollama with the StudyRAG start script to enable answers.")
+        st.markdown(
+            '<div class="sr-section">🎨 Appearance</div>',
+            unsafe_allow_html=True,
+        )
+        _theme_switch()
     return top_k
 
 
@@ -770,24 +784,14 @@ def _render_welcome(has_files: bool) -> None:
     )
 
 
-def _toggle_theme() -> None:
-    """Invert the current browser session's color mode."""
-    st.session_state["light_mode"] = not st.session_state.get("light_mode", False)
-
-
 def _theme_switch() -> None:
-    """Toggle the complete color scheme and rerender immediately."""
-    light = st.session_state.get("light_mode", False)
+    """Render a native animated sun/moon toggle inside the sidebar footer."""
     with st.container(key="theme_control"):
-        pressed = st.button(
-            "🌙  Dark" if light else "☀️  Light",
-            key="theme_button",
-            help="Switch to dark mode" if light else "Switch to light mode",
-            use_container_width=True,
+        st.toggle(
+            "☀️                 🌙",
+            key="light_mode",
+            help="Switch between the light and dark study themes.",
         )
-    if pressed:
-        _toggle_theme()
-        st.rerun()
 
 
 def main() -> None:
@@ -798,13 +802,12 @@ def main() -> None:
         layout="wide",
         initial_sidebar_state="expanded",
     )
-    # Handle the click before rendering CSS so light/dark styles update together.
-    _theme_switch()
-    _styles()
     session = _session()
     if "messages" not in st.session_state:
         st.session_state.messages = []
     top_k = _sidebar(session)
+    # The native toggle updates session state before CSS is applied.
+    _styles()
 
     st.markdown(
         '<div class="sr-heading"><div class="sr-eyebrow">FOCUS MODE</div>'
