@@ -224,54 +224,75 @@ def _styles() -> None:
           }
         }
 
-        /* Small, accessible sun/moon action in the upper-right corner. */
-        .st-key-theme_control {
+        /* Appearance dock belongs to the sidebar, never the top toolbar. */
+        section[data-testid="stSidebar"] .st-key-theme_dock {
           position: fixed;
-          top: .85rem;
-          right: 1.15rem;
-          width: 116px;
-          z-index: 999;
+          bottom: 16px;
+          left: 16px;
+          width: 268px;
+          max-width: calc(100vw - 32px);
+          z-index: 20;
+          padding: .75rem .85rem;
+          background: linear-gradient(135deg, #202c4a, #19223b);
+          border: 1px solid rgba(179, 163, 250, .25);
+          border-radius: 16px;
+          box-shadow: 0 12px 32px rgba(4, 8, 22, .24);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+          transition: background .25s ease, border-color .25s ease;
         }
-        .st-key-theme_control div.stButton > button {
-          width: 116px;
-          height: 41px;
-          min-height: 41px;
-          padding: 0 .7rem;
-          border-radius: 999px;
-          border: 1px solid rgba(182, 168, 255, .42);
-          background: linear-gradient(135deg, #353862, #222e50);
-          color: #f8edff;
-          font-size: .83rem;
-          font-weight: 700;
-          letter-spacing: .01em;
-          box-shadow: 0 8px 28px rgba(5, 9, 24, .3);
-          backdrop-filter: blur(15px);
-          -webkit-backdrop-filter: blur(15px);
-          transition: transform .22s ease, box-shadow .22s ease,
-                      background .22s ease, border-color .22s ease;
+        /* Leave space so the bottom dock never covers the last settings. */
+        section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+          padding-bottom: 7.5rem;
         }
-        .st-key-theme_control div.stButton > button:hover {
-          transform: translateY(-2px);
-          border-color: #bdadff;
-          background: linear-gradient(135deg, #504c90, #384a78);
-          box-shadow: 0 12px 30px rgba(113, 92, 226, .27);
+        section[data-testid="stSidebar"] .st-key-theme_dock > div > [data-testid="stMarkdown"] {
+          margin: 0;
         }
-        .st-key-theme_control div.stButton > button:focus-visible {
-          outline: 3px solid #ad9bff;
-          outline-offset: 3px;
+        .sr-theme-label {
+          font-size: .68rem;
+          font-weight: 750;
+          letter-spacing: .1em;
+          color: #a6b6d4;
+          margin: 0 0 .45rem;
+        }
+        .sr-theme-icon {
+          text-align: center;
+          line-height: 2rem;
+          font-size: 1.12rem;
+          user-select: none;
+        }
+        section[data-testid="stSidebar"] .st-key-theme_dock [data-testid="stToggle"] {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 2rem;
+          padding: 0;
+        }
+        section[data-testid="stSidebar"] .st-key-theme_dock [role="switch"] {
+          transition: transform .25s ease, background-color .25s ease,
+                      box-shadow .25s ease;
+          box-shadow: 0 0 0 3px rgba(154, 136, 255, .08);
+        }
+        section[data-testid="stSidebar"] .st-key-theme_dock [role="switch"]:focus-visible {
+          outline: 3px solid #bcafff;
+          outline-offset: 4px;
+        }
+        .sr-section-divider {
+          border-top: 1px solid rgba(155, 169, 210, .16);
+          margin: .65rem 0 .4rem;
         }
         @media (max-width: 700px) {
-          .st-key-theme_control { top: .5rem; right: .6rem; width: 102px; }
-          .st-key-theme_control div.stButton > button {
-            width: 102px;
-            height: 38px;
-            min-height: 38px;
-            font-size: .78rem;
+          section[data-testid="stSidebar"] .st-key-theme_dock {
+            bottom: 10px;
+            left: 10px;
+            width: min(268px, calc(100vw - 20px));
           }
         }
         @media (prefers-reduced-motion: reduce) {
-          .st-key-theme_control div.stButton > button { transition: none !important; }
-          .st-key-theme_control div.stButton > button:hover { transform: none; }
+          section[data-testid="stSidebar"] .st-key-theme_dock,
+          section[data-testid="stSidebar"] .st-key-theme_dock [role="switch"] {
+            transition: none !important;
+          }
         }
         /* A quiet, compact start screen rather than a large dashboard card. */
         .block-container { max-width: 900px; padding-top: 1.45rem; }
@@ -478,16 +499,12 @@ def _styles() -> None:
         st.markdown(
             """
             <style>
-            .st-key-theme_control div.stButton > button {
-              color: #4a3f82;
-              background: linear-gradient(145deg, #ffffff, #e8e3fb);
-              border-color: #c9c0ef;
-              box-shadow: 0 7px 22px #6577a326;
+            section[data-testid="stSidebar"] .st-key-theme_dock {
+              background: linear-gradient(135deg, #ffffff, #eeeaff);
+              border-color: #d5cbf2;
+              box-shadow: 0 10px 28px #6778a326;
             }
-            .st-key-theme_control div.stButton > button:hover {
-              background: linear-gradient(145deg, #f9f6ff, #dcd4fc);
-              border-color: #a99be3;
-            }
+            .sr-theme-label { color: #536587; }
             .stApp {
               color: #1c2941;
               background:
@@ -656,7 +673,8 @@ def _sidebar(session: StudySession) -> int:
             unsafe_allow_html=True,
         )
 
-        st.markdown('<div class="sr-label">YOUR DOCUMENTS</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sr-section-divider"></div>', unsafe_allow_html=True)
+        st.markdown('<div class="sr-label">📂  DOCUMENTS</div>', unsafe_allow_html=True)
         uploads = st.file_uploader(
             "Choose notes",
             type=["pdf", "txt", "md"],
@@ -694,7 +712,8 @@ def _sidebar(session: StudySession) -> int:
                 for filename in session.files:
                     st.text(filename)
 
-        st.markdown('<div class="sr-label">CHAT</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sr-section-divider"></div>', unsafe_allow_html=True)
+        st.markdown('<div class="sr-label">💬  CONVERSATIONS</div>', unsafe_allow_html=True)
         if st.button(
             "＋  New conversation",
             use_container_width=True,
@@ -721,7 +740,8 @@ def _sidebar(session: StudySession) -> int:
                 st.session_state.confirm_clear = False
                 st.rerun()
 
-        with st.expander("⚙  Advanced", expanded=False):
+        st.markdown('<div class="sr-section-divider"></div>', unsafe_allow_html=True)
+        with st.expander("⚙️  Settings", expanded=False):
             top_k = st.slider(
                 "Passages to retrieve",
                 min_value=1,
@@ -734,6 +754,7 @@ def _sidebar(session: StudySession) -> int:
             )
         if not online:
             st.caption("Launch Ollama with the StudyRAG start script to enable answers.")
+        _theme_switch()
     return top_k
 
 
@@ -770,24 +791,25 @@ def _render_welcome(has_files: bool) -> None:
     )
 
 
-def _toggle_theme() -> None:
-    """Invert the current browser session's color mode."""
-    st.session_state["light_mode"] = not st.session_state.get("light_mode", False)
-
-
 def _theme_switch() -> None:
-    """Toggle the complete color scheme and rerender immediately."""
-    light = st.session_state.get("light_mode", False)
-    with st.container(key="theme_control"):
-        pressed = st.button(
-            "🌙  Dark" if light else "☀️  Light",
-            key="theme_button",
-            help="Switch to dark mode" if light else "Switch to light mode",
-            use_container_width=True,
+    """Use Streamlit's stateful switch in the bottom-left sidebar dock."""
+    with st.container(key="theme_dock"):
+        st.markdown(
+            '<div class="sr-theme-label">APPEARANCE</div>',
+            unsafe_allow_html=True,
         )
-    if pressed:
-        _toggle_theme()
-        st.rerun()
+        sun, toggle, moon = st.columns([1, 2, 1], gap="small")
+        with sun:
+            st.markdown('<div class="sr-theme-icon">☀️</div>', unsafe_allow_html=True)
+        with toggle:
+            st.toggle(
+                "Light mode",
+                key="light_mode",
+                label_visibility="collapsed",
+                help="Switch between dark and light mode",
+            )
+        with moon:
+            st.markdown('<div class="sr-theme-icon">🌙</div>', unsafe_allow_html=True)
 
 
 def main() -> None:
@@ -798,8 +820,7 @@ def main() -> None:
         layout="wide",
         initial_sidebar_state="expanded",
     )
-    # Handle the click before rendering CSS so light/dark styles update together.
-    _theme_switch()
+    # Streamlit's keyed toggle persists its state and reruns the app automatically.
     _styles()
     session = _session()
     if "messages" not in st.session_state:
