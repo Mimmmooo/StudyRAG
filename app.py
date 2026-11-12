@@ -224,73 +224,87 @@ def _styles() -> None:
           }
         }
 
-        /* Small, two-option theme control inspired by a modern segmented switch. */
+        /* Equal-size theme choices; no nested native segmented-control margins. */
         section[data-testid="stSidebar"] .st-key-theme_dock {
           position: fixed;
           bottom: 18px;
-          left: 24px;
-          width: 132px;
-          height: 54px;
-          max-height: 54px;
+          left: 22px;
           z-index: 25;
-          padding: 5px;
-          border-radius: 30px;
-          background: #0a1020;
-          border: 1px solid rgba(181, 172, 246, .26);
-          box-shadow: 0 10px 26px rgba(2, 5, 18, .32);
+          width: 126px !important;
+          min-width: 126px;
+          height: 52px !important;
+          min-height: 52px;
+          max-height: 52px;
+          padding: 5px !important;
+          margin: 0 !important;
+          border-radius: 999px;
+          border: 1px solid rgba(182, 176, 245, .2);
+          background: #0c1222;
+          box-shadow: 0 7px 20px rgba(4, 8, 20, .22);
           overflow: hidden;
         }
         section[data-testid="stSidebar"] .st-key-theme_dock
-          [data-testid="stSegmentedControl"] {
-          margin: 0;
-          padding: 0;
-        }
-        section[data-testid="stSidebar"] .st-key-theme_dock
-          [data-testid="stSegmentedControl"] > div {
-          background: transparent;
-          border: 0;
-          box-shadow: none;
-          gap: 4px;
-        }
-        section[data-testid="stSidebar"] .st-key-theme_dock
-          [data-testid="stSegmentedControl"] button {
-          width: 55px;
-          min-width: 55px;
-          height: 42px;
-          min-height: 42px;
-          padding: 0;
-          display: inline-flex;
+          [data-testid="stHorizontalBlock"] {
+          display: flex !important;
           align-items: center;
-          justify-content: center;
-          border: none;
-          border-radius: 24px;
-          font-size: 1.2rem;
-          background: transparent;
-          color: #9fa8c4;
-          transition: background .22s ease, color .22s ease, transform .22s ease;
+          gap: 4px !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100%;
         }
         section[data-testid="stSidebar"] .st-key-theme_dock
-          [data-testid="stSegmentedControl"] button[aria-pressed="true"] {
-          background: #303b63;
-          color: #fff;
-          box-shadow: 0 3px 12px rgba(0, 0, 0, .18);
+          [data-testid="column"] {
+          min-width: 0 !important;
+          flex: 1 1 0 !important;
+          padding: 0 !important;
         }
         section[data-testid="stSidebar"] .st-key-theme_dock
-          [data-testid="stSegmentedControl"] button:hover {
-          transform: translateY(-1px);
+          [data-testid="stVerticalBlock"] {
+          gap: 0 !important;
+          padding: 0 !important;
+          margin: 0 !important;
         }
-        section[data-testid="stSidebar"] .st-key-theme_dock button:focus-visible {
-          outline: 2px solid #b7a5ff;
-          outline-offset: 2px;
+        section[data-testid="stSidebar"] .st-key-theme_dock div.stButton {
+          margin: 0 !important;
+          padding: 0 !important;
         }
-        /* Reserve only one short control row at the bottom of the sidebar. */
+        section[data-testid="stSidebar"] .st-key-theme_dock div.stButton > button {
+          width: 100% !important;
+          height: 40px !important;
+          min-height: 40px !important;
+          padding: 0 !important;
+          border: none !important;
+          border-radius: 999px !important;
+          background: transparent !important;
+          color: #b1b7ce !important;
+          box-shadow: none !important;
+          font-size: 1.3rem !important;
+          line-height: 1 !important;
+          font-weight: 500 !important;
+          transition: background .2s ease, color .2s ease, transform .2s ease;
+        }
+        section[data-testid="stSidebar"] .st-key-theme_dock
+          .st-key-theme_sun_active button,
+        section[data-testid="stSidebar"] .st-key-theme_dock
+          .st-key-theme_moon_active button {
+          background: #333c60 !important;
+          color: #fff !important;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, .2) !important;
+        }
+        section[data-testid="stSidebar"] .st-key-theme_dock
+          div.stButton > button:hover { transform: scale(1.04); }
+        section[data-testid="stSidebar"] .st-key-theme_dock
+          div.stButton > button:focus-visible {
+          outline: 2px solid #b8aaff;
+          outline-offset: 1px;
+        }
         section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
-          padding-bottom: 4.3rem;
+          padding-bottom: 4rem;
         }
         @media (max-width: 700px) {
           section[data-testid="stSidebar"] .st-key-theme_dock {
             bottom: 10px;
-            left: 12px;
+            left: 14px;
           }
         }
         @media (prefers-reduced-motion: reduce) {
@@ -505,15 +519,19 @@ def _styles() -> None:
             """
             <style>
             section[data-testid="stSidebar"] .st-key-theme_dock {
-              background: #edf1fa;
-              border-color: #d4dcef;
-              box-shadow: 0 8px 22px #7784a425;
+              background: #e9eef8;
+              border-color: #d2d8e8;
+              box-shadow: 0 7px 20px #7583a325;
             }
             section[data-testid="stSidebar"] .st-key-theme_dock
-              [data-testid="stSegmentedControl"] button[aria-pressed="true"] {
-              background: #ffffff;
-              color: #3a4169;
-              box-shadow: 0 3px 12px #818daa29;
+              div.stButton > button { color: #67718e !important; }
+            section[data-testid="stSidebar"] .st-key-theme_dock
+              .st-key-theme_sun_active button,
+            section[data-testid="stSidebar"] .st-key-theme_dock
+              .st-key-theme_moon_active button {
+              background: #ffffff !important;
+              color: #27365a !important;
+              box-shadow: 0 2px 9px #8290ab32 !important;
             }
             .stApp {
               color: #1c2941;
@@ -796,24 +814,36 @@ def _render_welcome(has_files: bool) -> None:
     )
 
 
-def _theme_changed() -> None:
-    """Apply the chosen appearance without resetting chat or uploaded notes."""
-    st.session_state["light_mode"] = st.session_state["theme_choice"] == "sun"
+def _set_theme(light: bool) -> None:
+    """Select a theme while preserving document and conversation session state."""
+    st.session_state["light_mode"] = light
 
 
 def _theme_switch() -> None:
-    """Render a small sun/moon segmented switch in the sidebar's lower-left."""
-    selected = "sun" if st.session_state.get("light_mode", False) else "moon"
+    """Show equal-size sun and moon buttons in a compact sidebar pill."""
+    is_light = st.session_state.get("light_mode", False)
     with st.container(key="theme_dock"):
-        st.segmented_control(
-            "Appearance",
-            options=["sun", "moon"],
-            default=selected,
-            format_func=lambda mode: "☼" if mode == "sun" else "☾",
-            key="theme_choice",
-            on_change=_theme_changed,
-            label_visibility="collapsed",
-        )
+        sun, moon = st.columns(2, gap="small")
+        with sun:
+            with st.container(key="theme_sun_active" if is_light else "theme_sun"):
+                st.button(
+                    "☼",
+                    key="theme_sun_button",
+                    help="Light mode",
+                    use_container_width=True,
+                    on_click=_set_theme,
+                    args=(True,),
+                )
+        with moon:
+            with st.container(key="theme_moon" if is_light else "theme_moon_active"):
+                st.button(
+                    "☾",
+                    key="theme_moon_button",
+                    help="Dark mode",
+                    use_container_width=True,
+                    on_click=_set_theme,
+                    args=(False,),
+                )
 
 
 def main() -> None:
