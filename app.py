@@ -824,8 +824,7 @@ def _theme_switch() -> None:
     is_light = st.session_state.get("light_mode", False)
     with st.container(key="theme_dock"):
         sun, moon = st.columns(2, gap="small")
-        with sun:
-            with st.container(key="theme_sun_active" if is_light else "theme_sun"):
+        with sun, st.container(key="theme_sun_active" if is_light else "theme_sun"):
                 st.button(
                     "☼",
                     key="theme_sun_button",
@@ -834,8 +833,7 @@ def _theme_switch() -> None:
                     on_click=_set_theme,
                     args=(True,),
                 )
-        with moon:
-            with st.container(key="theme_moon" if is_light else "theme_moon_active"):
+        with moon, st.container(key="theme_moon" if is_light else "theme_moon_active"):
                 st.button(
                     "☾",
                     key="theme_moon_button",
